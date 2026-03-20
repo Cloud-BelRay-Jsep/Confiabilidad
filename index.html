@@ -311,7 +311,6 @@ select.on{border-color:var(--br-blue);color:var(--br-blue);}
     <div class="kpi" style="--kc:var(--red)"><div class="klbl">Vencidos</div><div class="kval red" id="r-venc">—</div><div class="ksub">compromiso superado</div></div>
     <div class="kpi" style="--kc:var(--red)"><div class="klbl">Críticas P1 abiertas</div><div class="kval red" id="r-crit">—</div><div class="ksub" id="r-crit-s">de P1 totales</div></div>
     <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Antigüedad prom. backlog</div><div class="kval amber" id="r-antig">—</div><div class="ksub">días promedio</div></div>
-    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Velocidad de cierre</div><div class="kval" id="r-tasa">—</div><div class="ksub" id="r-tasa-s">req. cerrados / semana</div></div>
     <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">Tipo de req. más frecuente</div><div class="kval blue" id="r-top-tipo" style="font-size:12px;line-height:1.2">—</div><div class="ksub" id="r-top-tipo-s">veces registrado</div></div>
   </div>
 
@@ -413,7 +412,6 @@ select.on{border-color:var(--br-blue);color:var(--br-blue);}
     <div class="kpi" style="--kc:var(--red)"><div class="klbl">Vencidos</div><div class="kval red" id="aa-venc">—</div><div class="ksub">compromiso superado</div></div>
     <div class="kpi" style="--kc:var(--red)"><div class="klbl">Críticas P1 abiertas</div><div class="kval red" id="aa-crit">—</div><div class="ksub" id="aa-crit-s">de P1 totales</div></div>
     <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Antigüedad prom. backlog</div><div class="kval amber" id="aa-antig">—</div><div class="ksub">días promedio</div></div>
-    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Velocidad de cierre</div><div class="kval" id="aa-tasa">—</div><div class="ksub" id="aa-tasa-s">req. cerrados / semana</div></div>
     <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">Tipo req. más frecuente</div><div class="kval blue" id="aa-top-tipo" style="font-size:12px;line-height:1.2">—</div><div class="ksub" id="aa-top-tipo-s">veces registrado</div></div>
   </div>
   <div class="st">Distribución y composición</div>
@@ -467,7 +465,6 @@ select.on{border-color:var(--br-blue);color:var(--br-blue);}
     <div class="kpi" style="--kc:var(--red)"><div class="klbl">Vencidos</div><div class="kval red" id="co-venc">—</div><div class="ksub">compromiso superado</div></div>
     <div class="kpi" style="--kc:var(--red)"><div class="klbl">Críticas P1 abiertas</div><div class="kval red" id="co-crit">—</div><div class="ksub" id="co-crit-s">de P1 totales</div></div>
     <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Antigüedad prom. backlog</div><div class="kval amber" id="co-antig">—</div><div class="ksub">días promedio</div></div>
-    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Velocidad de cierre</div><div class="kval" id="co-tasa">—</div><div class="ksub" id="co-tasa-s">req. cerrados / semana</div></div>
     <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">Tipo req. más frecuente</div><div class="kval blue" id="co-top-tipo" style="font-size:12px;line-height:1.2">—</div><div class="ksub" id="co-top-tipo-s">veces registrado</div></div>
   </div>
   <div class="st">Distribución y composición</div>
@@ -521,7 +518,6 @@ select.on{border-color:var(--br-blue);color:var(--br-blue);}
     <div class="kpi" style="--kc:var(--red)"><div class="klbl">Vencidos</div><div class="kval red" id="ind-venc">—</div><div class="ksub">compromiso superado</div></div>
     <div class="kpi" style="--kc:var(--red)"><div class="klbl">Críticas P1 abiertas</div><div class="kval red" id="ind-crit">—</div><div class="ksub" id="ind-crit-s">de P1 totales</div></div>
     <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Antigüedad prom. backlog</div><div class="kval amber" id="ind-antig">—</div><div class="ksub">días promedio</div></div>
-    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Velocidad de cierre</div><div class="kval" id="ind-tasa">—</div><div class="ksub" id="ind-tasa-s">req. cerrados / semana</div></div>
     <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">Tipo req. más frecuente</div><div class="kval blue" id="ind-top-tipo" style="font-size:12px;line-height:1.2">—</div><div class="ksub" id="ind-top-tipo-s">veces registrado</div></div>
   </div>
   <div class="st">Distribución y composición</div>
@@ -2821,6 +2817,66 @@ const DATA = [
     "fechaEjec": "2026-03-10",
     "fechaReg": "2026-03-10",
     "entregable": "https://lookerstudio.google.com/u/0/reporting/a64709e9-a3e2-48a7-8d1a-1c7586b84f7a/page/p_gqmawg91ud"
+  },
+  {
+    "tarea": "Creación dashboard IA Andina Plantas",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-03-19",
+    "sem": "2026-W12",
+    "semCierre": "",
+    "semEjec": "2026-W12",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Tablero o Dashboard",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-19",
+    "fechaReg": "2026-03-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Creación dashboard IA Andina Rajo",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Rajo",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-03-19",
+    "sem": "2026-W12",
+    "semCierre": "",
+    "semEjec": "2026-W12",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Tablero o Dashboard",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-19",
+    "fechaReg": "2026-03-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Creación dashboard IA El Teniente",
+    "area": "Codelco",
+    "nodo": "Codelco El Teniente",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "2026-04-06",
+    "sem": "2026-W12",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Tablero o Dashboard",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-05",
+    "entregable": ""
   }
 ];
 
@@ -3081,11 +3137,6 @@ function renderResumen(){
   $('r-cumpl').textContent=`${cumpl}%`;$('r-cumpl-s').textContent=`${listo}/${total} cerrados`;
   $('r-crit').textContent=crit;$('r-crit-s').textContent=`${crit} de ${critT} P1 abiertas`;
   $('r-antig').textContent=`${avgA}d`;
-  // Velocidad de cierre: req cerrados / semanas activas con datos
-  const semsCierre=[...new Set(d.filter(r=>r.estado==='Listo'&&r.semCierre).map(r=>r.semCierre))];
-  const vel=semsCierre.length?+(listo/semsCierre.length).toFixed(1):0;
-  $('r-tasa').textContent=vel>0?vel+'x':'—';
-  $('r-tasa-s').textContent=vel>0?`cerrados en ${semsCierre.length} sem`:'sin cierres';
   // Top tipo de requerimiento
   const trMap={};d.forEach(r=>{const k=r.tipoReq||'Sin tipo';if(!trMap[k])trMap[k]=0;trMap[k]++;});
   const trTop=Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0];
@@ -3427,8 +3478,6 @@ function renderArea(areaName,pfx){
   const bk=d.filter(r=>r.estado!=='Listo');
   let avgA=0;bk.forEach(r=>{avgA+=r.comp?Math.max(0,daysAgo(r.comp)):15;});
   avgA=bk.length?Math.round(avgA/bk.length):0;
-  const semsCierreA=[...new Set(d.filter(r=>r.estado==='Listo'&&r.semCierre).map(r=>r.semCierre))];
-  const vel=semsCierreA.length?+(listo/semsCierreA.length).toFixed(1):0;
   const trMapA={};d.forEach(r=>{const k=r.tipoReq||'Sin tipo';if(!trMapA[k])trMapA[k]=0;trMapA[k]++;});
   const trTopA=Object.entries(trMapA).sort((a,b)=>b[1]-a[1])[0];
   const P=pfx+'-';
@@ -3441,7 +3490,6 @@ function renderArea(areaName,pfx){
   $(P+'venc').textContent=venc;
   $(P+'crit').textContent=crit;$(P+'crit-s').textContent=`${crit} de ${critT} P1 abiertas`;
   $(P+'antig').textContent=`${avgA}d`;
-  $(P+'tasa').textContent=vel>0?vel+'x':'—';$(P+'tasa-s').textContent=vel>0?`cerrados en ${semsCierreA.length} sem`:'sin cierres';
   if(trTopA){
     const lbl=trTopA[0].length>20?trTopA[0].slice(0,20)+'…':trTopA[0];
     $(P+'top-tipo').textContent=lbl;$(P+'top-tipo-s').textContent=`${trTopA[1]} veces registrado`;
