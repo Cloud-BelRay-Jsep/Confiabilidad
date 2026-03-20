@@ -1,0 +1,3651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bel-Ray · Gestión Operacional BI</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Barlow+Mono:wght@400;500&display=swap');
+
+/* ── BEL-RAY PALETTE ──
+   Azul Bel-Ray principal: #009FE3  (Pantone 299)
+   Negro estructural:      #1A1A1A
+   Gris oscuro card:       #1E1E1E
+   Gris borde:             rgba(0,159,227,.13)
+   Acento cian claro:      #33C3F0
+   Blanco texto:           #EAECF4
+   Alerta verde:           #22C55E
+   Alerta amber:           #F59E0B
+   Alerta rojo:            #EF4444
+*/
+:root{
+  --br-blue:#009FE3;
+  --br-blue2:#007AB8;
+  --br-blue3:#33C3F0;
+  --br-dark:#1A1A1A;
+  --bg:#141414;
+  --bg2:#1C1C1C;
+  --bg3:#242424;
+  --bg4:#2C2C2C;
+  --card:#1E1E1E;
+  --border:rgba(0,159,227,.13);
+  --border2:rgba(0,159,227,.3);
+  --border3:rgba(255,255,255,.06);
+  --text:#EAECF4;
+  --text2:#8A93AB;
+  --text3:#4A5270;
+  --green:#22C55E;
+  --amber:#F59E0B;
+  --red:#EF4444;
+  --font:'Barlow',sans-serif;
+  --mono:'Barlow Mono',monospace;
+  --r:8px;--rl:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;min-height:100vh;}
+
+/* Subtle grid texture */
+body::before{
+  content:'';
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background-image:linear-gradient(rgba(0,159,227,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,159,227,.025) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:linear-gradient(90deg,#111 0%,#1C1C1C 100%);
+  border-bottom:2px solid var(--br-blue);
+  padding:0 20px;
+  display:flex;align-items:center;gap:16px;
+  height:54px;
+  position:sticky;top:0;z-index:300;
+  box-shadow:0 2px 20px rgba(0,159,227,.2);
+}
+.brand{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.brand img{
+  height:36px;width:auto;object-fit:contain;
+  background:#FFFFFF;
+  border-radius:6px;
+  padding:3px 6px;
+}
+.brand-divider{width:1px;height:28px;background:rgba(0,159,227,.3);}
+.brand-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);white-space:nowrap;line-height:1.3;}
+.brand-label span{display:block;color:var(--br-blue);font-size:9px;letter-spacing:.15em;}
+
+.ntabs{display:flex;gap:2px;flex:1;margin-left:8px;}
+.ntab{
+  padding:6px 15px;border-radius:5px;cursor:pointer;
+  font-size:12px;font-weight:500;
+  color:var(--text2);border:none;background:transparent;
+  font-family:var(--font);transition:all .15s;white-space:nowrap;
+  letter-spacing:.02em;
+}
+.ntab:hover{background:rgba(0,159,227,.08);color:var(--text);}
+.ntab.active{background:rgba(0,159,227,.12);color:var(--br-blue3);font-weight:600;border-bottom:2px solid var(--br-blue);}
+.tmeta{
+  font-size:10px;color:var(--br-blue);
+  font-weight:600;letter-spacing:.05em;
+  white-space:nowrap;background:rgba(0,159,227,.08);
+  padding:4px 12px;border-radius:20px;
+  border:1px solid rgba(0,159,227,.25);
+}
+
+/* ── FILTER BAR ── */
+.fbar{
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:7px 20px;
+  display:flex;gap:7px;align-items:center;flex-wrap:wrap;
+  position:sticky;top:54px;z-index:290;
+}
+.flbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;}
+select{
+  background:var(--bg3);border:1px solid var(--border3);
+  color:var(--text2);font-family:var(--font);
+  font-size:11px;padding:4px 8px;border-radius:5px;
+  cursor:pointer;outline:none;transition:all .13s;max-width:145px;
+}
+select:hover{border-color:var(--border2);color:var(--text);}
+select.on{border-color:var(--br-blue);color:var(--br-blue);}
+.fclear{
+  font-size:10px;color:var(--text3);cursor:pointer;
+  padding:3px 9px;border-radius:4px;
+  border:1px solid var(--border3);background:transparent;
+  font-family:var(--font);transition:all .12s;
+}
+.fclear:hover{color:var(--text);border-color:var(--border2);}
+.fcount{font-size:10px;color:var(--text2);font-weight:600;margin-left:4px;}
+
+/* ── CHIP BAR ── */
+.chip-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:5px 20px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:28px;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(0,159,227,.1);border:1px solid rgba(0,159,227,.25);
+  color:var(--br-blue3);font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;cursor:pointer;
+}
+.chip span{opacity:.65;font-size:9px;}
+.chip:hover{background:rgba(0,159,227,.2);}
+.chip-hint{font-size:10px;color:var(--text3);font-style:italic;}
+
+/* ── PAGES ── */
+.page{display:none;padding:20px;max-width:1600px;position:relative;z-index:1;}
+.page.active{display:block;}
+
+/* ── SECTION TITLE ── */
+.st{
+  font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--br-blue);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.st::before{content:'';width:3px;height:12px;background:var(--br-blue);border-radius:2px;flex-shrink:0;}
+.st::after{content:'';flex:1;height:1px;background:rgba(0,159,227,.2);}
+
+/* ── GRIDS ── */
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:16px;}
+
+/* ── KPI ── */
+.kpi{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:13px 15px;
+  position:relative;overflow:hidden;
+  transition:border-color .15s,transform .1s;
+}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--br-blue));}
+.kpi::after{content:'';position:absolute;bottom:0;right:0;width:48px;height:48px;background:radial-gradient(circle,var(--kc,var(--br-blue)) 0%,transparent 70%);opacity:.06;border-radius:50%;}
+.kpi:hover{border-color:var(--border2);transform:translateY(-1px);}
+.klbl{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-weight:700;}
+.kval{font-size:26px;font-weight:700;color:var(--text);line-height:1;margin-bottom:4px;font-family:var(--font);letter-spacing:-.01em;}
+.ksub{font-size:10px;color:var(--text3);}
+.kval.red{color:var(--red);}
+.kval.green{color:var(--green);}
+.kval.amber{color:var(--amber);}
+.kval.blue{color:var(--br-blue3);}
+
+/* ── CHART CARD ── */
+.cc{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--rl);padding:16px;
+  transition:border-color .15s;
+}
+.cc:hover{border-color:rgba(0,159,227,.2);}
+.cc h3{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:2px;letter-spacing:.02em;}
+.cc .sub{font-size:9px;color:var(--text3);margin-bottom:12px;}
+.cc.clickable{cursor:pointer;}
+.cc.clickable canvas{cursor:pointer;}
+.cc.clickable h3::after{content:' ↗';font-size:9px;color:var(--br-blue);opacity:.6;}
+.cc.chart-active{border-color:var(--br-blue);box-shadow:0 0 0 1px rgba(0,159,227,.2),inset 0 0 30px rgba(0,159,227,.03);}
+
+/* ── BADGES ── */
+.b{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.bg{background:rgba(34,197,94,.1);color:var(--green);}
+.ba{background:rgba(245,158,11,.1);color:var(--amber);}
+.br{background:rgba(239,68,68,.1);color:var(--red);}
+.bb{background:rgba(0,159,227,.1);color:var(--br-blue3);}
+.bp{background:rgba(0,159,227,.06);color:var(--text2);}
+.bn{background:rgba(74,82,112,.25);color:var(--text3);}
+
+/* ── PROGRESS ── */
+.pw{margin-bottom:8px;}
+.ph{display:flex;justify-content:space-between;margin-bottom:3px;}
+.pb{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;}
+.pf{height:100%;border-radius:3px;transition:width .4s;}
+
+/* ── TABLE ── */
+.tw{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:16px;}
+.th2{
+  padding:11px 14px 9px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  background:rgba(0,159,227,.04);
+}
+.th2 h3{font-size:12px;font-weight:700;color:var(--text);}
+.ts{
+  background:var(--bg3);border:1px solid var(--border3);
+  border-radius:5px;padding:4px 9px;
+  font-family:var(--font);font-size:11px;color:var(--text);outline:none;width:180px;
+}
+.ts:focus{border-color:var(--br-blue);}
+.dt{width:100%;border-collapse:collapse;font-size:11px;}
+.dt th{
+  text-align:left;padding:7px 11px;
+  font-size:9px;font-weight:700;color:var(--br-blue);
+  text-transform:uppercase;letter-spacing:.08em;
+  border-bottom:1px solid rgba(0,159,227,.15);
+  background:rgba(0,159,227,.03);white-space:nowrap;
+}
+.dt td{padding:7px 11px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2);vertical-align:middle;}
+.dt tr:last-child td{border-bottom:none;}
+.dt tr:hover td{background:rgba(0,159,227,.04);}
+.tn{color:var(--text);max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tm{font-family:var(--mono);font-size:10px;}
+.empty td{text-align:center;color:var(--text3);padding:20px;font-size:11px;}
+
+/* ── AREA HDR ── */
+.ahdr{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.ahdr h2{font-size:15px;font-weight:700;letter-spacing:.01em;}
+
+/* ── DONUT LEGEND ── */
+.dl{display:flex;flex-direction:column;gap:5px;margin-top:10px;}
+.dl-row{display:flex;justify-content:space-between;font-size:11px;align-items:center;}
+.dl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+/* ── STACKED LEGEND ── */
+.sleg{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.sleg-i{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2);font-weight:500;}
+.sleg-sq{width:8px;height:8px;border-radius:2px;}
+
+/* ── SCROLL ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,159,227,.25);border-radius:3px;}
+
+@media(max-width:960px){
+  .g5,.g4{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:1fr 1fr;}
+  .g21{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<nav class="topbar">
+  <div class="brand">
+    <img src="data:image/png;base64,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T7VPVV/Bt03J7uTgds9mjTp/RVkUxlC4wYEKXbh7UooDJRomJmNNP6XuSTuRERVNXlERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERTplRepLvhdsVQ8vqaFwgc4ne5umrD3aj2LRs2LFLHi+WopISWVcTZ3acA46td3luvtWSyGc7nd3Zr4Jijdp2hx+akW6UdPUTsfNGHODNAT1alXeHANpWbDDzeNPdUbl5xGmRZFsRXQxcdHeAd69Nw+7qv1EnwlVkVm7h93VfqJPhKrIuPKjpQtvopDIvoxv8+qIiKqK7oiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiKS8hvt129TH8RUnVfjB+X91GOQ3267epj+IqTqvxg/L+6v9ifYM27yvLso/wC0ibNwXK4fd1X6iT4SqyKzdw+7qv1EnwlVkUXlR0oW30U1kX0Y3+fVERFVFd0RERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERFJeQ3267epj+IqTqvxg/L+6jHIb7ddvUx/EVJ1X4wfl/dX+xPsGbd5Xl2Uf9pE2bguVw+7qv1EnwlVkVm7h93VfqJPhKrIovKjpQtvoprIvoxv8+qIiKqK7oiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiKS8hvt129TH8RUnVfjB+X91GOQ3267epj+IqTqvxg/L+6v9ifYM27yvLso/7SJs3Bcrh93VfqJPhKrIrN3D7uq/USfCVWRReVHShbfRTWRfRjf59UREVUV3REREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREUl5Dfbrt6mP4ipOq/GD8v7qMchvt129TH8RUnVfjB+X91f7E+wZt3leXZR/2kTZuC5XD7uq/USfCVWRWbuH3dV+ok+Eqsii8qOlC2+imsi+jG/z6oiIqoruiIiIiIiIiIiIiIiIiLO4ewlfr7o+ionCA/wCfL4EfeePs1UgWTKu3whsl3rpap/THANhned5/RSMrZU1M3sbd1m4fvcomdtuSk7oj6nqF54baKIllbdhy/XHQ0dorJWng7kiG953K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" alt="Bel-Ray">
+    <div class="brand-divider"></div>
+    <div class="brand-label">Gestión Operacional<span>Mesa de Confiabilidad · BI Dashboard</span></div>
+  </div>
+  <div class="ntabs">
+    <button class="ntab active" onclick="goTab('res')">Resumen General</button>
+    <button class="ntab" onclick="goTab('aa')">Anglo American</button>
+    <button class="ntab" onclick="goTab('co')">Codelco</button>
+    <button class="ntab" onclick="goTab('ind')">Industria</button>
+  </div>
+  <div class="tmeta" id="metaBadge">Sem —</div>
+</nav>
+
+<!-- ══ FILTER BAR ══ -->
+<div class="fbar">
+  <span class="flbl">Filtros</span>
+  <select id="fSem"   onchange="applyFilters()"><option value="">Todas las semanas</option></select>
+  <select id="fArea"  onchange="applyFilters()"><option value="">Todas las áreas</option><option>Anglo American</option><option>Codelco</option><option>Industria</option><option>Mesa de Confiabilidad</option></select>
+  <select id="fNodo"  onchange="applyFilters()"><option value="">Todos los clientes</option></select>
+  <select id="fPrior" onchange="applyFilters()"><option value="">Toda prioridad</option><option value="Crítica (P1)">Crítica P1</option><option value="Importante (P2)">Importante P2</option><option value="Normal (P3)">Normal P3</option><option value="Baja (P4)">Baja P4</option></select>
+  <select id="fEst"   onchange="applyFilters()"><option value="">Todos los estados</option><option>Listo</option><option>En progreso</option><option>Sin empezar</option></select>
+  <select id="fResp"  onchange="applyFilters()"><option value="">Todos los creadores</option></select>
+  <select id="fTipo"  onchange="applyFilters()"><option value="">Todos los tipos</option><option value="Actualización de Matriz">Actualización de Matriz</option><option value="Calculo de Dosificación">Calculo de Dosificación</option><option value="Capacitación">Capacitación</option><option value="Control de entrega de APP - Validación">Control de entrega de APP - Validación</option><option value="Creación de Formularios">Creación de Formularios</option><option value="Creación de Tablero o Dashboard">Creación de Tablero o Dashboard</option><option value="Crear Planificación Semanal">Crear Planificación Semanal</option><option value="Definir funciones Confiabilidad para personal">Definir funciones Confiabilidad para personal</option><option value="Disponibilizar Información del Servicio">Disponibilizar Información del Servicio</option><option value="Estudio de Lubricación">Estudio de Lubricación</option><option value="Evaluación Técnica">Evaluación Técnica</option><option value="Generar programa de MONCON">Generar programa de MONCON</option><option value="Generar usuario geslub">Generar usuario geslub</option><option value="Implementación de Automatización">Implementación de Automatización</option><option value="Informe Técnico">Informe Técnico</option><option value="Interpretación de análisis de Aceite">Interpretación de análisis de Aceite</option><option value="Levantamientos">Levantamientos</option><option value="Limpieza de datos">Limpieza de datos</option><option value="MONCON">MONCON</option><option value="Mapa de Procesos">Mapa de Procesos</option><option value="Mejora Dashboard">Mejora Dashboard</option><option value="Mejoras Geslub">Mejoras Geslub</option><option value="Programa de Aplicaciones Estratégicas">Programa de Aplicaciones Estratégicas</option><option value="Protocolo de Prueba">Protocolo de Prueba</option><option value="Recomendación de Lubricantes">Recomendación de Lubricantes</option><option value="Reemplazo por vacaciones">Reemplazo por vacaciones</option><option value="Seguimiento de API's">Seguimiento de API's</option><option value="Validación de Matriz">Validación de Matriz</option><option value="Validación de Programas">Validación de Programas</option><option value="Verificación en Terreno">Verificación en Terreno</option></select>
+  <button class="fclear" id="btnClear" style="display:none" onclick="clearAll()">✕ Limpiar todo</button>
+  <span class="fcount" id="fcount"></span>
+</div>
+
+<!-- ══ CHIPS ══ -->
+<div class="chip-bar" id="chipBar"></div>
+
+<!-- ════════════════════════════════════════
+     RESUMEN GENERAL
+════════════════════════════════════════ -->
+<div class="page active" id="page-res">
+
+  <div class="st">Volumen de requerimientos</div>
+  <div class="g5">
+    <div class="kpi" style="--kc:var(--br-blue)"><div class="klbl">Total requerimientos</div><div class="kval blue" id="r-total">—</div><div class="ksub" id="r-total-s">en selección</div></div>
+    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Listos · cerrados</div><div class="kval green" id="r-listo">—</div><div class="ksub" id="r-listo-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">En progreso</div><div class="kval" id="r-prog">—</div><div class="ksub" id="r-prog-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Abiertos · sin empezar</div><div class="kval amber" id="r-sin">—</div><div class="ksub" id="r-sin-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--br-blue2)"><div class="klbl">% Cumplimiento requerimientos</div><div class="kval" id="r-cumpl">—</div><div class="ksub" id="r-cumpl-s">listas / comprometidas</div></div>
+  </div>
+  <div class="g5">
+    <div class="kpi" style="--kc:var(--red)"><div class="klbl">Vencidos</div><div class="kval red" id="r-venc">—</div><div class="ksub">compromiso superado</div></div>
+    <div class="kpi" style="--kc:var(--red)"><div class="klbl">Críticas P1 abiertas</div><div class="kval red" id="r-crit">—</div><div class="ksub" id="r-crit-s">de P1 totales</div></div>
+    <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Antigüedad prom. backlog</div><div class="kval amber" id="r-antig">—</div><div class="ksub">días promedio</div></div>
+    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Velocidad de cierre</div><div class="kval" id="r-tasa">—</div><div class="ksub" id="r-tasa-s">req. cerrados / semana</div></div>
+    <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">Tipo de req. más frecuente</div><div class="kval blue" id="r-top-tipo" style="font-size:12px;line-height:1.2">—</div><div class="ksub" id="r-top-tipo-s">veces registrado</div></div>
+  </div>
+
+  <div class="st">Distribución y composición</div>
+  <div class="g21">
+    <div class="cc clickable" id="cc-area100">
+      <h3>Estado por área · barras 100% · clic para filtrar</h3>
+      <div class="sub">Proporción Listo · En progreso · Sin empezar por área de gestión</div>
+      <div class="sleg">
+        <div class="sleg-i"><div class="sleg-sq" style="background:#22C55E"></div>Listo</div>
+        <div class="sleg-i"><div class="sleg-sq" style="background:#009FE3"></div>En progreso</div>
+        <div class="sleg-i"><div class="sleg-sq" style="background:#F59E0B"></div>Sin empezar</div>
+      </div>
+      <div style="position:relative;height:175px"><canvas id="cArea100"></canvas></div>
+    </div>
+    <div class="cc">
+      <h3>Estado global</h3>
+      <div class="sub">Distribución de todos los requerimientos</div>
+      <div style="position:relative;height:210px"><canvas id="cDonut"></canvas></div>
+      <div class="dl" id="dlEstado"></div>
+    </div>
+  </div>
+
+  <div class="st">Tendencia temporal · gráficos de línea</div>
+  <div class="g2">
+    <div class="cc clickable">
+      <h3>Requerimientos recibidos por semana · clic para filtrar</h3>
+      <div class="sub">Volumen de ingreso semanal · línea punteada = promedio del período</div>
+      <div style="position:relative;height:195px"><canvas id="cIngreso"></canvas></div>
+    </div>
+    <div class="cc">
+      <h3>Comprometidas por semana vs % cumplimiento</h3>
+      <div class="sub">Barras = tareas comprometidas por semana · Línea = % cerradas en fecha / comprometidas · Meta 70%</div>
+      <div style="position:relative;height:195px"><canvas id="cCumplSem"></canvas></div>
+    </div>
+  </div>
+
+  <div class="st">Análisis por dimensión · clic para filtrar</div>
+  <div class="g2">
+    <div class="cc clickable">
+      <h3>Prioridad · distribución de requerimientos</h3>
+      <div class="sub">Cantidad por nivel de prioridad</div>
+      <div style="position:relative;height:175px"><canvas id="cPriorBar"></canvas></div>
+    </div>
+    <div class="cc clickable">
+      <h3>Carga y resolución por pilar operativo · clic para filtrar</h3>
+      <div class="sub">Listas (verde) vs Backlog (rojo) por pilar</div>
+      <div style="position:relative;height:175px"><canvas id="cPilarResBar"></canvas></div>
+    </div>
+  </div>
+
+  <div class="g21">
+    <div class="cc clickable">
+      <h3>Ranking de clientes por backlog · clic para filtrar</h3>
+      <div class="sub">Clientes con más tareas abiertas · rojo = tiene vencidas</div>
+      <div style="position:relative;height:260px"><canvas id="cNodoBar"></canvas></div>
+    </div>
+    <div class="cc clickable">
+      <h3>Ranking por Tipo de Requerimiento · clic para filtrar</h3>
+      <div class="sub">Top tipos más frecuentes</div>
+      <div style="position:relative;height:240px"><canvas id="cTipoReqBar"></canvas></div>
+    </div>
+  </div>
+
+  <div class="st">Ranking de pilares operativos</div>
+  <div class="g2">
+    <div class="cc clickable">
+      <h3>Pilares que más reciben requerimientos · clic para filtrar</h3>
+      <div class="sub">Total de requerimientos por pilar operativo (incluye pilares combinados)</div>
+      <div style="position:relative;height:220px"><canvas id="cPilarRankBar"></canvas></div>
+    </div>
+    <div class="cc clickable">
+      <h3>Carga por creador de requerimiento · clic para filtrar</h3>
+      <div class="sub">Total solicitado por creador · verde = Listo · rojo = Backlog · ordenado por carga total</div>
+      <div style="position:relative;height:220px"><canvas id="cCreadorBar"></canvas></div>
+    </div>
+  </div>
+
+  <div class="st">Detalle de requerimientos</div>
+  <div class="tw">
+    <div class="th2"><h3 id="r-table-title">Todos los requerimientos</h3><input class="ts" placeholder="Buscar en tabla..." oninput="searchT('tResBody',this.value)"></div>
+    <div style="overflow-x:auto"><table class="dt"><thead><tr>
+      <th>Requerimiento</th><th>Área</th><th>Cliente</th><th>Creador</th><th>Prioridad</th><th>Estado</th><th>Compromiso</th><th>Atraso</th><th>Semana</th><th>Entregable</th>
+    </tr></thead><tbody id="tResBody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ════════ ANGLO ════════ -->
+<div class="page" id="page-aa">
+  <div class="st">Volumen de requerimientos · Anglo American</div>
+  <div class="g5">
+    <div class="kpi" style="--kc:var(--br-blue)"><div class="klbl">Total requerimientos</div><div class="kval blue" id="aa-total">—</div><div class="ksub" id="aa-total-s">en selección</div></div>
+    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Listos · cerrados</div><div class="kval green" id="aa-listo">—</div><div class="ksub" id="aa-listo-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">En progreso</div><div class="kval" id="aa-prog">—</div><div class="ksub" id="aa-prog-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Sin empezar</div><div class="kval amber" id="aa-sin">—</div><div class="ksub" id="aa-sin-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--br-blue2)"><div class="klbl">% Cumplimiento</div><div class="kval" id="aa-cumpl">—</div><div class="ksub" id="aa-cumpl-s">listas / total</div></div>
+  </div>
+  <div class="g5">
+    <div class="kpi" style="--kc:var(--red)"><div class="klbl">Vencidos</div><div class="kval red" id="aa-venc">—</div><div class="ksub">compromiso superado</div></div>
+    <div class="kpi" style="--kc:var(--red)"><div class="klbl">Críticas P1 abiertas</div><div class="kval red" id="aa-crit">—</div><div class="ksub" id="aa-crit-s">de P1 totales</div></div>
+    <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Antigüedad prom. backlog</div><div class="kval amber" id="aa-antig">—</div><div class="ksub">días promedio</div></div>
+    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Velocidad de cierre</div><div class="kval" id="aa-tasa">—</div><div class="ksub" id="aa-tasa-s">req. cerrados / semana</div></div>
+    <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">Tipo req. más frecuente</div><div class="kval blue" id="aa-top-tipo" style="font-size:12px;line-height:1.2">—</div><div class="ksub" id="aa-top-tipo-s">veces registrado</div></div>
+  </div>
+  <div class="st">Distribución y composición</div>
+  <div class="g21">
+    <div class="cc clickable"><h3>Estado por cliente · barras 100% · clic para filtrar</h3>
+      <div class="sub">Proporción Listo · En progreso · Sin empezar por cliente</div>
+      <div class="sleg"><div class="sleg-i"><div class="sleg-sq" style="background:#22C55E"></div>Listo</div><div class="sleg-i"><div class="sleg-sq" style="background:#009FE3"></div>En progreso</div><div class="sleg-i"><div class="sleg-sq" style="background:#F59E0B"></div>Sin empezar</div></div>
+      <div style="position:relative;height:175px"><canvas id="cAa100"></canvas></div>
+    </div>
+    <div class="cc"><h3>Estado global · Anglo American</h3><div class="sub">Distribución de todos los requerimientos</div>
+      <div style="position:relative;height:210px"><canvas id="cAaDonut"></canvas></div>
+    </div>
+  </div>
+  <div class="st">Tendencia temporal</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Requerimientos recibidos por semana · clic para filtrar</h3><div class="sub">Volumen de ingreso semanal</div><div style="position:relative;height:195px"><canvas id="cAaIngreso"></canvas></div></div>
+    <div class="cc"><h3>Comprometidas por semana vs % cumplimiento</h3><div class="sub">Barras = comprometidas · Línea = % cerradas en fecha · Meta 70%</div><div style="position:relative;height:195px"><canvas id="cAaCumpl"></canvas></div></div>
+  </div>
+  <div class="st">Análisis por dimensión · clic para filtrar</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Prioridad · distribución de requerimientos</h3><div class="sub">Cantidad por nivel de prioridad</div><div style="position:relative;height:175px"><canvas id="cAaPriorBar"></canvas></div></div>
+    <div class="cc clickable"><h3>Carga y resolución por pilar operativo · clic para filtrar</h3><div class="sub">Listas (verde) vs Backlog (rojo) por pilar</div><div style="position:relative;height:175px"><canvas id="cAaPilarRes"></canvas></div></div>
+  </div>
+  <div class="g21">
+    <div class="cc clickable"><h3>Ranking de clientes por backlog · clic para filtrar</h3><div class="sub">Clientes con más tareas abiertas · rojo = tiene vencidas</div><div style="position:relative;height:260px"><canvas id="cAaNodos"></canvas></div></div>
+    <div class="cc clickable"><h3>Ranking por Tipo de Requerimiento · clic para filtrar</h3><div class="sub">Top tipos más frecuentes</div><div style="position:relative;height:240px"><canvas id="cAaTipoReq"></canvas></div></div>
+  </div>
+  <div class="st">Ranking de pilares · creadores</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Pilares que más reciben requerimientos · clic para filtrar</h3><div class="sub">Total por pilar operativo</div><div style="position:relative;height:220px"><canvas id="cAaPilarRank"></canvas></div></div>
+    <div class="cc clickable"><h3>Carga por creador de requerimiento · clic para filtrar</h3><div class="sub">Total solicitado · verde = Listo · rojo = Backlog</div><div style="position:relative;height:220px"><canvas id="cAaCreador"></canvas></div></div>
+  </div>
+  <div class="st">Detalle de requerimientos</div>
+  <div class="tw">
+    <div class="th2"><h3 id="aa-tt">Detalle · Anglo American</h3><input class="ts" placeholder="Buscar..." oninput="searchT('tAABody',this.value)"></div>
+    <div style="overflow-x:auto"><table class="dt"><thead><tr><th>Requerimiento</th><th>Cliente</th><th>Creador</th><th>Prioridad</th><th>Estado</th><th>Compromiso</th><th>Atraso</th><th>Semana</th><th>Entregable</th></tr></thead><tbody id="tAABody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ════════ CODELCO ════════ -->
+<div class="page" id="page-co">
+  <div class="st">Volumen de requerimientos · Codelco</div>
+  <div class="g5">
+    <div class="kpi" style="--kc:var(--br-blue)"><div class="klbl">Total requerimientos</div><div class="kval blue" id="co-total">—</div><div class="ksub" id="co-total-s">en selección</div></div>
+    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Listos · cerrados</div><div class="kval green" id="co-listo">—</div><div class="ksub" id="co-listo-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">En progreso</div><div class="kval" id="co-prog">—</div><div class="ksub" id="co-prog-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Sin empezar</div><div class="kval amber" id="co-sin">—</div><div class="ksub" id="co-sin-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--br-blue2)"><div class="klbl">% Cumplimiento</div><div class="kval" id="co-cumpl">—</div><div class="ksub" id="co-cumpl-s">listas / total</div></div>
+  </div>
+  <div class="g5">
+    <div class="kpi" style="--kc:var(--red)"><div class="klbl">Vencidos</div><div class="kval red" id="co-venc">—</div><div class="ksub">compromiso superado</div></div>
+    <div class="kpi" style="--kc:var(--red)"><div class="klbl">Críticas P1 abiertas</div><div class="kval red" id="co-crit">—</div><div class="ksub" id="co-crit-s">de P1 totales</div></div>
+    <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Antigüedad prom. backlog</div><div class="kval amber" id="co-antig">—</div><div class="ksub">días promedio</div></div>
+    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Velocidad de cierre</div><div class="kval" id="co-tasa">—</div><div class="ksub" id="co-tasa-s">req. cerrados / semana</div></div>
+    <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">Tipo req. más frecuente</div><div class="kval blue" id="co-top-tipo" style="font-size:12px;line-height:1.2">—</div><div class="ksub" id="co-top-tipo-s">veces registrado</div></div>
+  </div>
+  <div class="st">Distribución y composición</div>
+  <div class="g21">
+    <div class="cc clickable"><h3>Estado por cliente · barras 100% · clic para filtrar</h3>
+      <div class="sub">Proporción Listo · En progreso · Sin empezar por cliente</div>
+      <div class="sleg"><div class="sleg-i"><div class="sleg-sq" style="background:#22C55E"></div>Listo</div><div class="sleg-i"><div class="sleg-sq" style="background:#009FE3"></div>En progreso</div><div class="sleg-i"><div class="sleg-sq" style="background:#F59E0B"></div>Sin empezar</div></div>
+      <div style="position:relative;height:175px"><canvas id="cCo100"></canvas></div>
+    </div>
+    <div class="cc"><h3>Estado global · Codelco</h3><div class="sub">Distribución de todos los requerimientos</div>
+      <div style="position:relative;height:210px"><canvas id="cCoDonut"></canvas></div>
+    </div>
+  </div>
+  <div class="st">Tendencia temporal</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Requerimientos recibidos por semana · clic para filtrar</h3><div class="sub">Volumen de ingreso semanal</div><div style="position:relative;height:195px"><canvas id="cCoIngreso"></canvas></div></div>
+    <div class="cc"><h3>Comprometidas por semana vs % cumplimiento</h3><div class="sub">Barras = comprometidas · Línea = % cerradas en fecha · Meta 70%</div><div style="position:relative;height:195px"><canvas id="cCoCumpl"></canvas></div></div>
+  </div>
+  <div class="st">Análisis por dimensión · clic para filtrar</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Prioridad · distribución de requerimientos</h3><div class="sub">Cantidad por nivel de prioridad</div><div style="position:relative;height:175px"><canvas id="cCoPriorBar"></canvas></div></div>
+    <div class="cc clickable"><h3>Carga y resolución por pilar operativo · clic para filtrar</h3><div class="sub">Listas (verde) vs Backlog (rojo) por pilar</div><div style="position:relative;height:175px"><canvas id="cCoPilarRes"></canvas></div></div>
+  </div>
+  <div class="g21">
+    <div class="cc clickable"><h3>Ranking de clientes por backlog · clic para filtrar</h3><div class="sub">Clientes con más tareas abiertas · rojo = tiene vencidas</div><div style="position:relative;height:260px"><canvas id="cCoNodos"></canvas></div></div>
+    <div class="cc clickable"><h3>Ranking por Tipo de Requerimiento · clic para filtrar</h3><div class="sub">Top tipos más frecuentes</div><div style="position:relative;height:240px"><canvas id="cCoTipoReq"></canvas></div></div>
+  </div>
+  <div class="st">Ranking de pilares · creadores</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Pilares que más reciben requerimientos · clic para filtrar</h3><div class="sub">Total por pilar operativo</div><div style="position:relative;height:220px"><canvas id="cCoPilarRank"></canvas></div></div>
+    <div class="cc clickable"><h3>Carga por creador de requerimiento · clic para filtrar</h3><div class="sub">Total solicitado · verde = Listo · rojo = Backlog</div><div style="position:relative;height:220px"><canvas id="cCoCreador"></canvas></div></div>
+  </div>
+  <div class="st">Detalle de requerimientos</div>
+  <div class="tw">
+    <div class="th2"><h3 id="co-tt">Detalle · Codelco</h3><input class="ts" placeholder="Buscar..." oninput="searchT('tCOBody',this.value)"></div>
+    <div style="overflow-x:auto"><table class="dt"><thead><tr><th>Requerimiento</th><th>Cliente</th><th>Creador</th><th>Prioridad</th><th>Estado</th><th>Compromiso</th><th>Atraso</th><th>Semana</th><th>Entregable</th></tr></thead><tbody id="tCOBody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ════════ INDUSTRIA ════════ -->
+<div class="page" id="page-ind">
+  <div class="st">Volumen de requerimientos · Industria</div>
+  <div class="g5">
+    <div class="kpi" style="--kc:var(--br-blue)"><div class="klbl">Total requerimientos</div><div class="kval blue" id="ind-total">—</div><div class="ksub" id="ind-total-s">en selección</div></div>
+    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Listos · cerrados</div><div class="kval green" id="ind-listo">—</div><div class="ksub" id="ind-listo-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">En progreso</div><div class="kval" id="ind-prog">—</div><div class="ksub" id="ind-prog-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Sin empezar</div><div class="kval amber" id="ind-sin">—</div><div class="ksub" id="ind-sin-s">% del total</div></div>
+    <div class="kpi" style="--kc:var(--br-blue2)"><div class="klbl">% Cumplimiento</div><div class="kval" id="ind-cumpl">—</div><div class="ksub" id="ind-cumpl-s">listas / total</div></div>
+  </div>
+  <div class="g5">
+    <div class="kpi" style="--kc:var(--red)"><div class="klbl">Vencidos</div><div class="kval red" id="ind-venc">—</div><div class="ksub">compromiso superado</div></div>
+    <div class="kpi" style="--kc:var(--red)"><div class="klbl">Críticas P1 abiertas</div><div class="kval red" id="ind-crit">—</div><div class="ksub" id="ind-crit-s">de P1 totales</div></div>
+    <div class="kpi" style="--kc:var(--amber)"><div class="klbl">Antigüedad prom. backlog</div><div class="kval amber" id="ind-antig">—</div><div class="ksub">días promedio</div></div>
+    <div class="kpi" style="--kc:var(--green)"><div class="klbl">Velocidad de cierre</div><div class="kval" id="ind-tasa">—</div><div class="ksub" id="ind-tasa-s">req. cerrados / semana</div></div>
+    <div class="kpi" style="--kc:var(--br-blue3)"><div class="klbl">Tipo req. más frecuente</div><div class="kval blue" id="ind-top-tipo" style="font-size:12px;line-height:1.2">—</div><div class="ksub" id="ind-top-tipo-s">veces registrado</div></div>
+  </div>
+  <div class="st">Distribución y composición</div>
+  <div class="g21">
+    <div class="cc clickable"><h3>Estado por cliente · barras 100% · clic para filtrar</h3>
+      <div class="sub">Proporción Listo · En progreso · Sin empezar por cliente</div>
+      <div class="sleg"><div class="sleg-i"><div class="sleg-sq" style="background:#22C55E"></div>Listo</div><div class="sleg-i"><div class="sleg-sq" style="background:#009FE3"></div>En progreso</div><div class="sleg-i"><div class="sleg-sq" style="background:#F59E0B"></div>Sin empezar</div></div>
+      <div style="position:relative;height:175px"><canvas id="cInd100"></canvas></div>
+    </div>
+    <div class="cc"><h3>Estado global · Industria</h3><div class="sub">Distribución de todos los requerimientos</div>
+      <div style="position:relative;height:210px"><canvas id="cIndDonut"></canvas></div>
+    </div>
+  </div>
+  <div class="st">Tendencia temporal</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Requerimientos recibidos por semana · clic para filtrar</h3><div class="sub">Volumen de ingreso semanal</div><div style="position:relative;height:195px"><canvas id="cIndIngreso"></canvas></div></div>
+    <div class="cc"><h3>Comprometidas por semana vs % cumplimiento</h3><div class="sub">Barras = comprometidas · Línea = % cerradas en fecha · Meta 70%</div><div style="position:relative;height:195px"><canvas id="cIndCumpl"></canvas></div></div>
+  </div>
+  <div class="st">Análisis por dimensión · clic para filtrar</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Prioridad · distribución de requerimientos</h3><div class="sub">Cantidad por nivel de prioridad</div><div style="position:relative;height:175px"><canvas id="cIndPriorBar"></canvas></div></div>
+    <div class="cc clickable"><h3>Carga y resolución por pilar operativo · clic para filtrar</h3><div class="sub">Listas (verde) vs Backlog (rojo) por pilar</div><div style="position:relative;height:175px"><canvas id="cIndPilarRes"></canvas></div></div>
+  </div>
+  <div class="g21">
+    <div class="cc clickable"><h3>Ranking de clientes por backlog · clic para filtrar</h3><div class="sub">Clientes con más tareas abiertas · rojo = tiene vencidas</div><div style="position:relative;height:260px"><canvas id="cIndNodos"></canvas></div></div>
+    <div class="cc clickable"><h3>Ranking por Tipo de Requerimiento · clic para filtrar</h3><div class="sub">Top tipos más frecuentes</div><div style="position:relative;height:240px"><canvas id="cIndTipoReq"></canvas></div></div>
+  </div>
+  <div class="st">Ranking de pilares · creadores</div>
+  <div class="g2">
+    <div class="cc clickable"><h3>Pilares que más reciben requerimientos · clic para filtrar</h3><div class="sub">Total por pilar operativo</div><div style="position:relative;height:220px"><canvas id="cIndPilarRank"></canvas></div></div>
+    <div class="cc clickable"><h3>Carga por creador de requerimiento · clic para filtrar</h3><div class="sub">Total solicitado · verde = Listo · rojo = Backlog</div><div style="position:relative;height:220px"><canvas id="cIndCreador"></canvas></div></div>
+  </div>
+  <div class="st">Detalle de requerimientos</div>
+  <div class="tw">
+    <div class="th2"><h3 id="ind-tt">Detalle · Industria</h3><input class="ts" placeholder="Buscar..." oninput="searchT('tINDBody',this.value)"></div>
+    <div style="overflow-x:auto"><table class="dt"><thead><tr><th>Requerimiento</th><th>Cliente</th><th>Creador</th><th>Prioridad</th><th>Estado</th><th>Compromiso</th><th>Atraso</th><th>Semana</th><th>Entregable</th></tr></thead><tbody id="tINDBody"></tbody></table></div>
+  </div>
+</div>
+<script>
+const DATA = [
+  {
+    "tarea": "Resumen del servicio Cemento Melon - La Calera",
+    "area": "Industria",
+    "nodo": "Cemento Melón La Calera",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Oscar Andres Cortes-Monroy Rojas, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Grecia Jerez",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W03",
+    "semCierre": "2026-W05",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-01-29",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-15",
+    "entregable": ""
+  },
+  {
+    "tarea": "Poder Realizar ETL con la vista de Anglo American",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Joaquin Sepulveda",
+    "prior": "Baja (P4)",
+    "estado": "En progreso",
+    "comp": "2026-02-15",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Limpieza de datos",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-09",
+    "fechaReg": "2026-02-03",
+    "entregable": ""
+  },
+  {
+    "tarea": "Finalizar Matriz Maestra Plantas",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Joaquin Sepulveda",
+    "prior": "Crítica (P1)",
+    "estado": "En progreso",
+    "comp": "2026-03-06",
+    "sem": "2026-W08",
+    "semCierre": "",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Levantamiento",
+    "fechaCierre": "",
+    "fechaEjec": "2026-02-17",
+    "fechaReg": "2026-02-17",
+    "entregable": ""
+  },
+  {
+    "tarea": "Generar protocolo de prueba Hidrosecur d46",
+    "area": "Anglo American",
+    "nodo": "Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Arellano",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "2026-02-01",
+    "sem": "2026-W03",
+    "semCierre": "2026-W12",
+    "semEjec": "2026-W04",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Protocolo de Prueba",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-03-16",
+    "fechaEjec": "2026-01-21",
+    "fechaReg": "2026-01-21",
+    "entregable": "https://docs.google.com/document/d/1DipfdOAwyvLC_ShLtaCc9x_AR1b31a6zdTqBaM4ulhY/edit?usp=drive_link"
+  },
+  {
+    "tarea": "Informe Análisis de Aceite Reductor Nuevo Ariztía",
+    "area": "Industria",
+    "nodo": "Ariztía - El Paico",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Daniel Huaiquimilla",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "2026-W08",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-02-19",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-19",
+    "entregable": ""
+  },
+  {
+    "tarea": "Monitoreo Semanal de Molinos",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Diego Figueroa",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "MONCON",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-22",
+    "entregable": "https://lookerstudio.google.com/u/0/reporting/d9998cb6-84f2-4a4e-8203-9fd4d5d8baff/page/ssGqF/edit"
+  },
+  {
+    "tarea": "Generar un programa de MONCON",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Generar programa de MONCON",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-22",
+    "entregable": ""
+  },
+  {
+    "tarea": "Cierre de protocolos de prueba de molinos en andina",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Diego Figueroa",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Protocolo de Prueba",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-22",
+    "entregable": "https://drive.google.com/file/d/1a_o15_igzbjfae66wy0Kc8Z0R6cPIK9Q/view?usp=drive_link"
+  },
+  {
+    "tarea": "Finalizar matriz maestrar Mina Rajo",
+    "area": "Anglo American",
+    "nodo": "Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Joaquin Sepulveda",
+    "prior": "Crítica (P1)",
+    "estado": "En progreso",
+    "comp": "2026-03-31",
+    "sem": "2026-W08",
+    "semCierre": "",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Levantamiento",
+    "fechaCierre": "",
+    "fechaEjec": "2026-02-17",
+    "fechaReg": "2026-02-17",
+    "entregable": ""
+  },
+  {
+    "tarea": "Generar PPT para proyección de Pautas en SAG",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Sepulveda",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "2026-01-27",
+    "sem": "2026-W04",
+    "semCierre": "2026-W08",
+    "semEjec": "2026-W03",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-02-16",
+    "fechaEjec": "2026-01-20",
+    "fechaReg": "2026-01-20",
+    "entregable": "https://docs.google.com/presentation/d/1FPHQtYQF9t9VezIcnz_-eQpolBXrRYdB/edit?usp=drive_link&ouid=101449289808604395781&rtpof=true&sd=true"
+  },
+  {
+    "tarea": "Generar Protocolos de prueba",
+    "area": "Industria",
+    "nodo": "Cemento Melon Ventanas",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Grecia Jerez",
+    "prior": "Crítica (P1)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Protocolo de Prueba",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-23",
+    "entregable": ""
+  },
+  {
+    "tarea": "Incluir base de datos AC1000 2.0 a LVGJ73",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Jonathan Araya",
+    "prior": "Baja (P4)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Mejora Dashboard",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-19",
+    "entregable": ""
+  },
+  {
+    "tarea": "Calculo de viscosidad rodamiento carozzi galletas",
+    "area": "Industria",
+    "nodo": "Carozzi Galletas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Nicolas Suarez",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "2026-W08",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-02-20",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-20",
+    "entregable": ""
+  },
+  {
+    "tarea": "Ajustar Protocolos de prueba CM-1A",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Sepulveda",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "2026-03-26",
+    "sem": "2026-W04",
+    "semCierre": "2026-W05",
+    "semEjec": "2026-W06",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Protocolo de Prueba",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-01-26",
+    "fechaEjec": "2026-01-23",
+    "fechaReg": "2026-01-23",
+    "entregable": "https://docs.google.com/document/d/1rzbW5381wlvpBuU_P-mOHl7xt9TGc4Ym/edit?usp=drive_link&ouid=101449289808604395781&rtpof=true&sd=true"
+  },
+  {
+    "tarea": "Recomendación de selección de viscosidad Carozzi Galletas",
+    "area": "Industria",
+    "nodo": "Carozzi Galletas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Nicolas Suarez",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "2026-W08",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-02-20",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-20",
+    "entregable": ""
+  },
+  {
+    "tarea": "Entrega de app para registro consumos finning",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Jonathan Araya",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W04",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Control de entrega de APP - Validación",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2025-12-05",
+    "entregable": "https://www.appsheet.com/newshortcut/bcc3c565-34f6-4aa1-bd39-b9ebe0ca32dc"
+  },
+  {
+    "tarea": "Verificación SCL Cemento Melon",
+    "area": "Industria",
+    "nodo": "Cemento Melón La Calera",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Jorge Campos",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W05",
+    "semCierre": "2026-W05",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Verificación en Terreno",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-01-28",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-28",
+    "entregable": ""
+  },
+  {
+    "tarea": "Informe comparativo grasas rajo DAND",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Rajo",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Diego Figueroa",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W05",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Informe Técnico",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-29",
+    "entregable": ""
+  },
+  {
+    "tarea": "SACODE Línea G pastas",
+    "area": "Industria",
+    "nodo": "Carozzi Pastas",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Gustavo Figueroa",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W05",
+    "semCierre": "2026-W05",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-01-28",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-28",
+    "entregable": ""
+  },
+  {
+    "tarea": "Ajustes matriz maestra Carozzi - Chocolates",
+    "area": "Industria",
+    "nodo": "Carozzi Chocolates",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W05",
+    "semCierre": "2026-W07",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-09",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-28",
+    "entregable": ""
+  },
+  {
+    "tarea": "Cambiar actividades deshabilitadas a habilitadas geslub (625)",
+    "area": "Industria",
+    "nodo": "Aconcagua Foods",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Diego Escobar",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W05",
+    "semCierre": "2026-W10",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-02",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-27",
+    "entregable": ""
+  },
+  {
+    "tarea": "SACODE PVSA",
+    "area": "Industria",
+    "nodo": "PVSA",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W05",
+    "semCierre": "2026-W09",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-02-27",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-26",
+    "entregable": ""
+  },
+  {
+    "tarea": "Programación Semana 06 ICB",
+    "area": "Industria",
+    "nodo": "ICB",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W05",
+    "semCierre": "2026-W09",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Crear Planificación Semanal",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-27",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-29",
+    "entregable": ""
+  },
+  {
+    "tarea": "Revisión puntos levantados línea SPS - AE",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W05",
+    "semCierre": "2026-W10",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Validación de Matriz",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-02",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-29",
+    "entregable": ""
+  },
+  {
+    "tarea": "Crear reportabilidad para camión con Nex-U LVGJ-73",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Jonathan Araya",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "2025-11-30",
+    "sem": "2026-W05",
+    "semCierre": "2026-W06",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Tablero o Dashboard",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-03-20",
+    "fechaEjec": "2026-02-18",
+    "fechaReg": "2025-11-21",
+    "entregable": "https://lookerstudio.google.com/reporting/1e39c043-0fc1-497d-b84e-0ab14ffd5c97"
+  },
+  {
+    "tarea": "Revisar la API de Lojack",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "2025-11-30",
+    "sem": "2026-W05",
+    "semCierre": "2026-W06",
+    "semEjec": "2025-W47",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Seguimiento de API's",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2025-11-21",
+    "fechaEjec": "2025-11-21",
+    "fechaReg": "2025-11-21",
+    "entregable": "https://lookerstudio.google.com/u/0/reporting/92548c9c-dcaf-4ea0-bf8b-3fc0511544fc/page/p_8zm714urnd/edit"
+  },
+  {
+    "tarea": "Aplicación para registro de grasa y estanques en los camiones",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya, Bastian Andres  Guerrero Almonacid",
+    "creador": "Jonathan Araya",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "2025-12-15",
+    "sem": "2025-W50",
+    "semCierre": "",
+    "semEjec": "2025-W50",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Control de entrega de APP - Validación",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2025-12-10",
+    "fechaEjec": "2025-12-09",
+    "fechaReg": "2025-12-09",
+    "entregable": ""
+  },
+  {
+    "tarea": "Definir Funciones y requisitos para el cargo Capataz",
+    "area": "Industria",
+    "nodo": "Mesa Confiabilidad",
+    "resp": "Jorge Andrés Campos Herrera",
+    "creador": "Joaquin Sepulveda",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-03-04",
+    "sem": "2026-W09",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Definir funciones Confiabilidad para personal",
+    "pilar": "Servicio",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-09",
+    "fechaReg": "2026-02-27",
+    "entregable": ""
+  },
+  {
+    "tarea": "Validación AE - Carozzi Caramelos",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Validación de Matriz",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-04",
+    "entregable": ""
+  },
+  {
+    "tarea": "Formulario vasos lubricadores - ICB",
+    "area": "Industria",
+    "nodo": "ICB",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Jorge Campos",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W06",
+    "semCierre": "2026-W06",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Formularios",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-02-04",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-04",
+    "entregable": ""
+  },
+  {
+    "tarea": "Implementar Actividad Específica No Realizadas en Caramelos",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Jorge Andrés Campos Herrera",
+    "creador": "Grecia Jerez",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "2026-02-12",
+    "sem": "2026-W06",
+    "semCierre": "2026-W07",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-12",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Definir equipos críticos por planta",
+    "area": "Industria",
+    "nodo": "Unidad de Manejo de Información",
+    "resp": "Oscar Andres Cortes-Monroy Rojas, Omar Alejandro Zuñiga Pizarro, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Bastian Guerrero",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "2026-02-12",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Visualización Monitoreos en Dashboard de reportes semanales",
+    "area": "Industria",
+    "nodo": "",
+    "resp": "Oscar Andres Cortes-Monroy Rojas, Omar Alejandro Zuñiga Pizarro, Joaquín Eduardo Sepúlveda Araya, Bastian Andres  Guerrero Almonacid",
+    "creador": "Grecia Jerez",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-02-12",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Levantamientos Linea CAMA",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "2026-02-13",
+    "sem": "2026-W06",
+    "semCierre": "2026-W10",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Levantamientos",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-04",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-08",
+    "entregable": ""
+  },
+  {
+    "tarea": "Revisar programación de semana 2 a 8 de marzo en geslub 2.0",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Joaquín Eduardo Sepúlveda Araya, Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-02-10",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Crear Planificación Semanal",
+    "pilar": "Servicio",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Levantamiento Línea MAD",
+    "area": "Industria",
+    "nodo": "Carozzi Chocolates",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Grecia Jerez",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "2026-02-13",
+    "sem": "2026-W06",
+    "semCierre": "2026-W09",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Levantamientos",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-27",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-08",
+    "entregable": ""
+  },
+  {
+    "tarea": "Capacitacion tecnica capataces",
+    "area": "Industria",
+    "nodo": "",
+    "resp": "Oscar Andres Cortes-Monroy Rojas, Omar Alejandro Zuñiga Pizarro, Bastian Andres  Guerrero Almonacid, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Grecia Jerez",
+    "prior": "Baja (P4)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Capacitación",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Evaluación técnica capataces",
+    "area": "Industria",
+    "nodo": "Mesa Confiabilidad",
+    "resp": "Roger",
+    "creador": "Grecia Jerez",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-02-12",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Evaluación Técnica",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "2026-02-27",
+    "fechaReg": "2026-02-08",
+    "entregable": ""
+  },
+  {
+    "tarea": "Procedimiento para levantamiento de puntos que no se encuentren en matriz",
+    "area": "Industria",
+    "nodo": "",
+    "resp": "Oscar Andres Cortes-Monroy Rojas, Omar Alejandro Zuñiga Pizarro, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Grecia Jerez",
+    "prior": "Baja (P4)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Servicio",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Crear dashboard de servicio de CODELCO Andina Plantas en Geslub 2.0",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Oscar Andres Cortes-Monroy Rojas, Bastian Andres  Guerrero Almonacid, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "2026-02-12",
+    "sem": "2026-W06",
+    "semCierre": "2026-W11",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Tablero o Dashboard",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2026-03-10",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Definir funciones de técnico en confiabilidad y planificador",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Joaquín Eduardo Sepúlveda Araya, Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-02-12",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Definir funciones Confiabilidad para personal",
+    "pilar": "Servicio",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Entrega de levantamiento y matriz Codelco Ventanas",
+    "area": "Codelco",
+    "nodo": "Codelco Ventanas",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Oscar Andres Cortes-Monroy Rojas, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Juan Carlos Campos",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "2026-02-10",
+    "sem": "2026-W06",
+    "semCierre": "2026-W11",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Levantamientos",
+    "pilar": "Levantamiento",
+    "fechaCierre": "2026-03-10",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": "https://docs.google.com/document/d/1OIjn1uqv7U069bR4zBnDrFyKJSu51Vlr/edit?usp=drive_link&ouid=114711794844914010148&rtpof=true&sd=true"
+  },
+  {
+    "tarea": "Normalizar levantamiento de Flotación El Teniente",
+    "area": "Codelco",
+    "nodo": "Codelco El Teniente",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Oscar Andres Cortes-Monroy Rojas, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Juan Carlos Campos",
+    "prior": "Baja (P4)",
+    "estado": "Sin empezar",
+    "comp": "2026-02-19",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Levantamientos",
+    "pilar": "Levantamiento",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Costos Lubricantes Enero 2026",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W06",
+    "semCierre": "2026-W06",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "",
+    "pilar": "Soporte al PMC",
+    "fechaCierre": "2026-02-04",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-06",
+    "entregable": ""
+  },
+  {
+    "tarea": "Realizar informe de oportunidades de mejora con Nex-U",
+    "area": "Anglo American",
+    "nodo": "Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "René Torres",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "2026-02-11",
+    "sem": "2026-W06",
+    "semCierre": "2026-W06",
+    "semEjec": "2026-W05",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Informe Técnico",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-02-06",
+    "fechaEjec": "2026-02-05",
+    "fechaReg": "2026-02-05",
+    "entregable": "https://docs.google.com/document/d/1FNWgvXUfWzjB-Pm5r5VgtHEDXRd_aUzd/edit?usp=drive_link&ouid=101449289808604395781&rtpof=true&sd=true"
+  },
+  {
+    "tarea": "Capacitación Confiabilidad Lucas Villagra",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "René Torres",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "2026-03-13",
+    "sem": "2026-W06",
+    "semCierre": "2026-W07",
+    "semEjec": "2026-W06",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Capacitación",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-02-13",
+    "fechaEjec": "2026-02-06",
+    "fechaReg": "2026-02-06",
+    "entregable": ""
+  },
+  {
+    "tarea": "Realizar Toma de tareas Pedro Romero",
+    "area": "Anglo American",
+    "nodo": "Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "René Torres",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "2026-02-23",
+    "sem": "2026-W06",
+    "semCierre": "2026-W06",
+    "semEjec": "2026-W05",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Reemplazo por vacaciones",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-05",
+    "fechaEjec": "2026-02-05",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Realizar seguimiento APIs de Attens SMK/RSMK",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas, Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "René Torres",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-02-12",
+    "sem": "2026-W06",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Seguimiento de API's",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-06",
+    "entregable": ""
+  },
+  {
+    "tarea": "Estudio de lubricación Levantamiento SPS",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas, Omar Alejandro Zuñiga Pizarro, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W06",
+    "semCierre": "2026-W12",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Levantamientos",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-03-17",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-25",
+    "entregable": ""
+  },
+  {
+    "tarea": "Estudio de lubricación Carozzi Chocolates",
+    "area": "Industria",
+    "nodo": "Carozzi Chocolates",
+    "resp": "Oscar Andres Cortes-Monroy Rojas, Omar Alejandro Zuñiga Pizarro, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W06",
+    "semCierre": "2026-W12",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Estudio de Lubricación",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-17",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-25",
+    "entregable": ""
+  },
+  {
+    "tarea": "Definir las actividades de monitoreo en equipos críticos con - EC",
+    "area": "Industria",
+    "nodo": "Unidad de Manejo de Información",
+    "resp": "Joaquín Eduardo Sepúlveda Araya, Omar Alejandro Zuñiga Pizarro",
+    "creador": "Bastian Guerrero",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "2026-02-13",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-10",
+    "entregable": ""
+  },
+  {
+    "tarea": "Subir actividades no vinculadas a plan matriz de sap en geslub 2.0 CODELCO Andina",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Daniel Huaiquimilla",
+    "prior": "Crítica (P1)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Levantamiento",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-10",
+    "entregable": ""
+  },
+  {
+    "tarea": "Incorporar actividades de moncon en geslub 2.0",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-10",
+    "entregable": ""
+  },
+  {
+    "tarea": "Propuesta para mantener actualizada la matriz de Lubricación",
+    "area": "Industria",
+    "nodo": "",
+    "resp": "Jorge Andrés Campos Herrera",
+    "creador": "Grecia Jerez",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-02-12",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "2026-W10",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Servicio",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-02",
+    "fechaReg": "2026-02-05",
+    "entregable": ""
+  },
+  {
+    "tarea": "Levantamiento Molinera Puente Alto",
+    "area": "Industria",
+    "nodo": "Molinera Puente Alto",
+    "resp": "Oscar Andres Cortes-Monroy Rojas, Roger, Joaquín Eduardo Sepúlveda Araya, Omar Alejandro Zuñiga Pizarro, Jorge Andrés Campos Herrera",
+    "creador": "Daniel Huaiquimilla",
+    "prior": "Crítica (P1)",
+    "estado": "Sin empezar",
+    "comp": "2026-03-01",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Levantamientos",
+    "pilar": "Levantamiento",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-01-22",
+    "entregable": ""
+  },
+  {
+    "tarea": "Solicitud de información basal Breden Master",
+    "area": "Industria",
+    "nodo": "Breden Master",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Andres Muñoz",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-02-11",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-10",
+    "entregable": ""
+  },
+  {
+    "tarea": "Recomendación Técnica para PC5500 El Soldado",
+    "area": "Anglo American",
+    "nodo": "El Soldado - Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "René Torres",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "2026-02-12",
+    "sem": "2026-W07",
+    "semCierre": "2026-W07",
+    "semEjec": "2026-W04",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-02-12",
+    "fechaEjec": "2026-02-11",
+    "fechaReg": "2026-02-11",
+    "entregable": "https://drive.google.com/file/d/1Q51k0cKFSQ0wTNRpmZIE8VHc6otRT9bY/view?usp=drive_link"
+  },
+  {
+    "tarea": "Recolección información desde SAP con mejoras en DAND para presentación en licitación",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Roger",
+    "creador": "Roger Zúñiga",
+    "prior": "Normal (P3)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Soporte al PMC",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-12",
+    "entregable": ""
+  },
+  {
+    "tarea": "Definición de funciones de supervisores DAND desde confiabilidad",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Definir funciones Confiabilidad para personal",
+    "pilar": "Servicio",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-12",
+    "entregable": ""
+  },
+  {
+    "tarea": "Capacitación de SAP",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Roger",
+    "creador": "Juan Carlos Campos",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W07",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Capacitación",
+    "pilar": "Servicio",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-13",
+    "fechaReg": "2026-02-12",
+    "entregable": ""
+  },
+  {
+    "tarea": "Puntos de Lubricación por consumo y marca de lubricante para F.Garrido",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Sepulveda",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-02-17",
+    "sem": "2026-W08",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-16",
+    "entregable": ""
+  },
+  {
+    "tarea": "Actualización matriz de lubricación (22 actividades)",
+    "area": "Industria",
+    "nodo": "Cemento Melón La Calera",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Sebastián Salinas",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "2026-02-17",
+    "sem": "2026-W08",
+    "semCierre": "2026-W08",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2026-02-17",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-16",
+    "entregable": ""
+  },
+  {
+    "tarea": "Actualización Espacio de trabajo en base a modificaciones realizadas por Diego Escobar",
+    "area": "Industria",
+    "nodo": "Aconcagua Foods",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Diego Escobar",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "2026-02-18",
+    "sem": "2026-W08",
+    "semCierre": "2026-W08",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2026-02-18",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-17",
+    "entregable": ""
+  },
+  {
+    "tarea": "Modificación de actividad e ingreso de SCL y AE con respectivo formulario",
+    "area": "Industria",
+    "nodo": "Carozzi Bresler",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W08",
+    "semCierre": "2026-W08",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2026-02-17",
+    "fechaEjec": "2026-02-17",
+    "fechaReg": "2026-02-17",
+    "entregable": ""
+  },
+  {
+    "tarea": "Realización de etiqueta para envío de análisis de aceite",
+    "area": "Industria",
+    "nodo": "PVSA",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W08",
+    "semCierre": "2026-W08",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-18",
+    "fechaEjec": "2026-02-18",
+    "fechaReg": "2026-02-18",
+    "entregable": ""
+  },
+  {
+    "tarea": "Arreglar tipo de equipo en matriz de espacio de trabajo",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos, Carozzi Chocolates, Carozzi Bresler, Carozzi Pastas, Carozzi Galletas",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Oscar Cortes-Monroy",
+    "prior": "Baja (P4)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W08",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-19",
+    "entregable": ""
+  },
+  {
+    "tarea": "Planificación sem 11 Codelco Andina Plantas",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro, Roger, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Juan Carlos Campos",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "2026-02-19",
+    "sem": "2026-W08",
+    "semCierre": "2026-W08",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Crear Planificación Semanal",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-19",
+    "fechaEjec": "2026-02-19",
+    "fechaReg": "2026-02-19",
+    "entregable": ""
+  },
+  {
+    "tarea": "Subir Matriz de Lub a Geslub",
+    "area": "Industria",
+    "nodo": "Castaño",
+    "resp": "Roger",
+    "creador": "Daniel Huaiquimilla",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W08",
+    "semCierre": "2026-W12",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Levantamiento",
+    "fechaCierre": "2026-03-20",
+    "fechaEjec": "2026-02-19",
+    "fechaReg": "2026-02-19",
+    "entregable": ""
+  },
+  {
+    "tarea": "Recomendación lubricante para cadenas y unidades hidráulicas",
+    "area": "Industria",
+    "nodo": "Ditzler",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Andres Muñoz",
+    "prior": "Normal (P3)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W08",
+    "semCierre": "",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "2026-02-19",
+    "fechaReg": "2026-02-20",
+    "entregable": ""
+  },
+  {
+    "tarea": "Programa Semana 09 - Carozzi Galletas",
+    "area": "Industria",
+    "nodo": "Carozzi Galletas",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W08",
+    "semCierre": "2026-W12",
+    "semEjec": "2026-W08",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Crear Planificación Semanal",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-20",
+    "fechaEjec": "2026-02-20",
+    "fechaReg": "2026-02-20",
+    "entregable": ""
+  },
+  {
+    "tarea": "Recomendación Lubricante",
+    "area": "Industria",
+    "nodo": "Carozzi Bresler",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W08",
+    "semCierre": "2026-W11",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-03-10",
+    "fechaEjec": "2026-02-23",
+    "fechaReg": "2026-02-20",
+    "entregable": ""
+  },
+  {
+    "tarea": "Actualización de la bitácora de análisis de aceite Royal Purple Synergy 220",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Sepulveda",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "2026-02-24",
+    "sem": "2026-W09",
+    "semCierre": "2026-W09",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-02-24",
+    "fechaEjec": "2026-02-24",
+    "fechaReg": "2026-02-19",
+    "entregable": "https://lookerstudio.google.com/u/0/reporting/53e0b950-6c81-4598-ae4a-ca9d1db824b5/page/p_uptxd9mezd"
+  },
+  {
+    "tarea": "Análisis de aceites",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W13",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-03-24",
+    "fechaEjec": "2026-02-24",
+    "fechaReg": "2026-02-24",
+    "entregable": ""
+  },
+  {
+    "tarea": "Análisis de aceite",
+    "area": "Industria",
+    "nodo": "PVSA",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W10",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-03-02",
+    "fechaEjec": "2026-02-24",
+    "fechaReg": "2026-02-24",
+    "entregable": ""
+  },
+  {
+    "tarea": "Presentación Para Jefe de Mantenión SAG - Resumen Gestión",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Sepulveda",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "2026-02-27",
+    "sem": "2026-W09",
+    "semCierre": "2026-W11",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-13",
+    "fechaEjec": "2026-02-24",
+    "fechaReg": "2026-02-24",
+    "entregable": "https://lookerstudio.google.com/reporting/04c7ccb8-df92-44d2-9d73-c7bca0d482d4"
+  },
+  {
+    "tarea": "Actualización matriz maestra espacio de trabajo",
+    "area": "Industria",
+    "nodo": "ICB",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Baja (P4)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W13",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2026-03-24",
+    "fechaEjec": "2026-02-25",
+    "fechaReg": "2026-02-24",
+    "entregable": ""
+  },
+  {
+    "tarea": "Actualización tablero / matriz maestra",
+    "area": "Industria",
+    "nodo": "Aconcagua Foods",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Diego Escobar",
+    "prior": "Baja (P4)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "2026-02-25",
+    "fechaReg": "2026-02-25",
+    "entregable": ""
+  },
+  {
+    "tarea": "Recomendacion de lubricantes Watts",
+    "area": "Industria",
+    "nodo": "Watt's Lonquen",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Andres Muñoz",
+    "prior": "Normal (P3)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "2026-02-26",
+    "fechaReg": "2026-02-25",
+    "entregable": ""
+  },
+  {
+    "tarea": "Recomendación Lubricante Carozzi Caramelos",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Normal (P3)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "2026-02-25",
+    "fechaReg": "2026-02-25",
+    "entregable": ""
+  },
+  {
+    "tarea": "Atomatizar dashboard de protocolo Beslux Crown",
+    "area": "Codelco",
+    "nodo": "Codelco Andina Plantas",
+    "resp": "Omar Alejandro Zuñiga Pizarro",
+    "creador": "Diego Figueroa",
+    "prior": "Crítica (P1)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Implementación de Automatización",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "2026-02-25",
+    "fechaReg": "2026-02-24",
+    "entregable": "https://lookerstudio.google.com/u/0/reporting/d9998cb6-84f2-4a4e-8203-9fd4d5d8baff/page/ssGqF/edit"
+  },
+  {
+    "tarea": "Asignación formulario para verificar dosificación y cantidad de hilos en SCL 300-LU01",
+    "area": "Industria",
+    "nodo": "Cemento Melón La Calera",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Benjamin Avío",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W10",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Formularios",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2026-03-02",
+    "fechaEjec": "2026-02-25",
+    "fechaReg": "2026-02-25",
+    "entregable": ""
+  },
+  {
+    "tarea": "Solicita reunión con M.R para automatizar carga de datos en Nex-U",
+    "area": "Anglo American",
+    "nodo": "Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "René Torres",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "2026-03-24",
+    "sem": "2026-W09",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Implementación de Automatización",
+    "pilar": "Implementación de Tecnología",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-09",
+    "fechaReg": "2026-02-25",
+    "entregable": ""
+  },
+  {
+    "tarea": "Avance Informe técnico Royal Purple Synergy 220",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya, Oscar Andres Cortes-Monroy Rojas, Omar Alejandro Zuñiga Pizarro",
+    "creador": "Cristian Sepulveda",
+    "prior": "Crítica (P1)",
+    "estado": "En progreso",
+    "comp": "2026-03-04",
+    "sem": "2026-W09",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Informe Técnico",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-13",
+    "fechaReg": "2026-02-25",
+    "entregable": ""
+  },
+  {
+    "tarea": "Creación de un formulario para recopilar información sobre posibles mejoras considerando los tres alcances definidos en la presentación",
+    "area": "Industria",
+    "nodo": "Cemento Melón La Calera (https://www.notion.so/Cemento-Mel-n-La-Calera-2e8620292d14807881a2e965977b5b5e?pvs=21)",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Roger Zúñiga",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Formularios",
+    "pilar": "Levantamiento",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-26",
+    "entregable": ""
+  },
+  {
+    "tarea": "Reporte mensual Febrero",
+    "area": "Industria",
+    "nodo": "Carozzi Pastas",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W09",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Validación de Programas",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-27",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-27",
+    "entregable": ""
+  },
+  {
+    "tarea": "Reporte semana 9 Galletas",
+    "area": "Industria",
+    "nodo": "Carozzi Galletas",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W09",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Validación de Programas",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-27",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-27",
+    "entregable": ""
+  },
+  {
+    "tarea": "Programa Semana 10",
+    "area": "Industria",
+    "nodo": "Carozzi Galletas",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W09",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Crear Planificación Semanal",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-02-27",
+    "fechaEjec": "",
+    "fechaReg": "2026-02-27",
+    "entregable": ""
+  },
+  {
+    "tarea": "Reunirme con los IA para definir las HH de sus funciones",
+    "area": "Anglo American",
+    "nodo": "Mesa Confiabilidad, Anglo American Los Bronces Plantas, Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Sepulveda",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W12",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Definir funciones Confiabilidad para personal",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-18",
+    "fechaEjec": "2026-02-27",
+    "fechaReg": "2026-02-27",
+    "entregable": ""
+  },
+  {
+    "tarea": "Revisión Reporte Semana 9 y Programa Semana 10",
+    "area": "Industria",
+    "nodo": "Carozzi Galletas, Carozzi Pastas, Cemento Melón La Calera, Carozzi Caramelos, Aconcagua Foods, ICB, Carozzi Bresler, Carozzi Chocolates",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Grecia Jerez",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W09",
+    "semCierre": "2026-W10",
+    "semEjec": "2026-W09",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Validación de Programas",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-02",
+    "fechaEjec": "2026-02-27",
+    "fechaReg": "2026-02-27",
+    "entregable": ""
+  },
+  {
+    "tarea": "Recomendacion técnica Robot Kuka KR 360-2",
+    "area": "Industria",
+    "nodo": "Aconcagua Foods",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Diego Escobar",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W10",
+    "semCierre": "2026-W10",
+    "semEjec": "2026-W10",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-03-02",
+    "fechaEjec": "2026-03-02",
+    "fechaReg": "2026-03-02",
+    "entregable": ""
+  },
+  {
+    "tarea": "Recomendación de Lubricantes",
+    "area": "Industria",
+    "nodo": "AMR Especialidades",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Tania Riquelme",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W10",
+    "semCierre": "2026-W10",
+    "semEjec": "2026-W10",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-03-03",
+    "fechaEjec": "2026-03-03",
+    "fechaReg": "2026-02-27",
+    "entregable": ""
+  },
+  {
+    "tarea": "Análisis de aceite PVSA",
+    "area": "Industria",
+    "nodo": "PVSA",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W10",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-02",
+    "entregable": ""
+  },
+  {
+    "tarea": "Crear usuario para Carozzi Caramelos",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Roger, Jorge Andrés Campos Herrera, Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Normal (P3)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W10",
+    "semCierre": "2026-W10",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Generar usuario geslub",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-03-06",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-03",
+    "entregable": ""
+  },
+  {
+    "tarea": "Etiqueta envío análisis de aceite",
+    "area": "Industria",
+    "nodo": "Ariztía - Ochagavía",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Daniel Huaiquimilla",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W10",
+    "semCierre": "2026-W10",
+    "semEjec": "2026-W10",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "2026-03-04",
+    "fechaEjec": "2026-03-04",
+    "fechaReg": "2026-03-04",
+    "entregable": ""
+  },
+  {
+    "tarea": "Modificacion matriz espacio de trabajo",
+    "area": "Industria",
+    "nodo": "Ariztía - Ochagavía",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Diego Escobar",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W10",
+    "semCierre": "2026-W10",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Gestión de información",
+    "fechaCierre": "2026-03-04",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-04",
+    "entregable": ""
+  },
+  {
+    "tarea": "Solicitud información de servicio  por Planta (Actividades y cumplimientos)",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Roger, Jorge Andrés Campos Herrera, Omar Alejandro Zuñiga Pizarro, Oscar Andres Cortes-Monroy Rojas, Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Sepulveda",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "2026-03-09",
+    "sem": "2026-W11",
+    "semCierre": "2026-W11",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-13",
+    "fechaEjec": "2026-03-12",
+    "fechaReg": "2026-03-03",
+    "entregable": "https://lookerstudio.google.com/reporting/04c7ccb8-df92-44d2-9d73-c7bca0d482d4"
+  },
+  {
+    "tarea": "Realizar Análisis de Toma de Muestra",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Joaquin Sepulveda",
+    "prior": "Crítica (P1)",
+    "estado": "Sin empezar",
+    "comp": "2026-03-10",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-09",
+    "entregable": ""
+  },
+  {
+    "tarea": "Solicitud de Tablero Aplicaciones Plantas Los Bronces",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Bastian Andres  Guerrero Almonacid",
+    "creador": "Cristian Sepulveda",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "2026-03-13",
+    "sem": "2026-W11",
+    "semCierre": "2026-W12",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Tablero o Dashboard",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-18",
+    "fechaEjec": "2026-03-10",
+    "fechaReg": "2026-03-10",
+    "entregable": "https://lookerstudio.google.com/u/0/reporting/c1c86e6a-b8c2-4720-b2fc-bb980a1c5521/page/p_gqmawg91ud"
+  },
+  {
+    "tarea": "Verificar y Ajustar Protocolo de Prueba Molino Bolas 3 SAG",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "",
+    "creador": "Leandro Bernedo",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Protocolo de Prueba",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-10",
+    "entregable": ""
+  },
+  {
+    "tarea": "Análisis de aceite",
+    "area": "Industria",
+    "nodo": "Watt's Lonquen",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Andres Muñoz",
+    "prior": "Normal (P3)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Interpretación de análisis de Aceite",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-11",
+    "fechaReg": "2026-03-06",
+    "entregable": ""
+  },
+  {
+    "tarea": "Ingreso de Actividad de Inspección de SCL con respectivo formulario",
+    "area": "Industria",
+    "nodo": "Soprole",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Daniel Huaiquimilla",
+    "prior": "Normal (P3)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Servicio",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-11",
+    "fechaReg": "2026-03-10",
+    "entregable": ""
+  },
+  {
+    "tarea": "Ruta crítica",
+    "area": "Industria",
+    "nodo": "Ariztía - El Paico",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Daniel Huaiquimilla",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Disponibilizar Información del Servicio",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-11",
+    "fechaReg": "2026-03-02",
+    "entregable": ""
+  },
+  {
+    "tarea": "Levantamiento paletizadora",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Importante (P2)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Levantamientos",
+    "pilar": "Levantamiento",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-11",
+    "fechaReg": "2026-03-09",
+    "entregable": ""
+  },
+  {
+    "tarea": "Reporte Semana 10 + Programa Semana 11",
+    "area": "Industria",
+    "nodo": "Carozzi Bresler, Carozzi Chocolates, Aconcagua Foods, Carozzi Caramelos, Cemento Melón La Calera, Carozzi Pastas, ICB, Carozzi Galletas",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Grecia Jerez",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "2026-W11",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Validación de Programas",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-11",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-06",
+    "entregable": ""
+  },
+  {
+    "tarea": "Verificación dosificación Vasos Lubricadores ICB",
+    "area": "Industria",
+    "nodo": "ICB",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Crítica (P1)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "2026-W11",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Calculo de Dosificación",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-11",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-11",
+    "entregable": ""
+  },
+  {
+    "tarea": "Levantamiento MAD - Chocolates",
+    "area": "Industria",
+    "nodo": "Carozzi Chocolates",
+    "resp": "Oscar Andres Cortes-Monroy Rojas, Roger",
+    "creador": "Danilo Durán",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Levantamientos",
+    "pilar": "Levantamiento",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-11",
+    "entregable": ""
+  },
+  {
+    "tarea": "Recomendación Piñón-Corona",
+    "area": "Industria",
+    "nodo": "Cemento Melón La Calera",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Sebastián Salinas",
+    "prior": "Normal (P3)",
+    "estado": "Listo",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "2026-W11",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Recomendación de Lubricantes",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "2026-03-11",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-11",
+    "entregable": ""
+  },
+  {
+    "tarea": "Calculo de dosificación Cadena",
+    "area": "Industria",
+    "nodo": "Carozzi Bresler",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Justen Barrera",
+    "prior": "Normal (P3)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Calculo de Dosificación",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-11",
+    "fechaReg": "2026-03-11",
+    "entregable": ""
+  },
+  {
+    "tarea": "Actualización Matriz Linea NID",
+    "area": "Industria",
+    "nodo": "Carozzi Caramelos",
+    "resp": "Oscar Andres Cortes-Monroy Rojas",
+    "creador": "Danilo Durán",
+    "prior": "Normal (P3)",
+    "estado": "En progreso",
+    "comp": "",
+    "sem": "2026-W11",
+    "semCierre": "",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Actualización de Matriz",
+    "pilar": "Gestión de información",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-12",
+    "fechaReg": "2026-03-12",
+    "entregable": ""
+  },
+  {
+    "tarea": "Crear Programa de monitoreo de aplicaciones estratégicas para mina rajo",
+    "area": "Anglo American",
+    "nodo": "Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Arellano",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "2026-03-25",
+    "sem": "2026-W12",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Programa de Aplicaciones Estratégicas",
+    "pilar": "Monitoreo",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-18",
+    "entregable": ""
+  },
+  {
+    "tarea": "Capacitación para lukas Aguilera (Tareas de Confiabilidad)",
+    "area": "Anglo American",
+    "nodo": "Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Arellano",
+    "prior": "Importante (P2)",
+    "estado": "Sin empezar",
+    "comp": "2026-03-20",
+    "sem": "2026-W12",
+    "semCierre": "",
+    "semEjec": "",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Capacitación",
+    "pilar": "Asesoría Técnica",
+    "fechaCierre": "",
+    "fechaEjec": "",
+    "fechaReg": "2026-03-18",
+    "entregable": ""
+  },
+  {
+    "tarea": "Coordinar Capacitación de Tablero Connect para RSMK",
+    "area": "Anglo American",
+    "nodo": "Anglo American Rajo",
+    "resp": "Joaquín Eduardo Sepúlveda Araya",
+    "creador": "Cristian Arellano",
+    "prior": "Crítica (P1)",
+    "estado": "En progreso",
+    "comp": "2026-03-20",
+    "sem": "2026-W12",
+    "semCierre": "",
+    "semEjec": "2026-W12",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Capacitación",
+    "pilar": "Implementación de Tecnología",
+    "fechaCierre": "",
+    "fechaEjec": "2026-03-18",
+    "fechaReg": "2026-03-18",
+    "entregable": ""
+  },
+  {
+    "tarea": "Solicitud de Tablero Aplicaciones Rajo Los Bronces",
+    "area": "Anglo American",
+    "nodo": "Anglo American Los Bronces Plantas",
+    "resp": "Bastian Andres  Guerrero Almonacid",
+    "creador": "Cristian Sepulveda",
+    "prior": "Importante (P2)",
+    "estado": "Listo",
+    "comp": "2026-03-13",
+    "sem": "2026-W11",
+    "semCierre": "2026-W12",
+    "semEjec": "2026-W11",
+    "tipo": "Requerimiento Formal",
+    "tipoReq": "Creación de Tablero o Dashboard",
+    "pilar": "Servicio",
+    "fechaCierre": "2026-03-18",
+    "fechaEjec": "2026-03-10",
+    "fechaReg": "2026-03-10",
+    "entregable": "https://lookerstudio.google.com/u/0/reporting/a64709e9-a3e2-48a7-8d1a-1c7586b84f7a/page/p_gqmawg91ud"
+  }
+];
+
+/* ════════ PLUGIN REGISTRATION ════════ */
+if(window.ChartDataLabels){Chart.register(window.ChartDataLabels);}
+
+/* ════════ GLOBALS ════════ */
+const TODAY = new Date('2026-03-20');
+const SEMANAS = ["2025-W47", "2025-W50", "2026-W03", "2026-W04", "2026-W05", "2026-W06", "2026-W07", "2026-W08", "2026-W09", "2026-W10", "2026-W11", "2026-W12", "2026-W13"];
+let ACTIVE_TAB = 'res';
+let CHARTS = {};
+let FS = {sem:'',area:'',nodo:'',prior:'',estado:'',resp:'',tipo:''};
+let CF = {};
+
+/* ════════ HELPERS ════════ */
+const $=id=>document.getElementById(id);
+const TODAY_MS=TODAY.getTime();
+function daysAgo(c){if(!c)return null;return Math.round((TODAY_MS-new Date(c).getTime())/86400000);}
+function fmtDate(d){if(!d)return '—';return new Date(d).toLocaleDateString('es-CL',{day:'2-digit',month:'short'});}
+function shortName(n){if(!n)return '—';const p=n.split(' ');return p.length<=2?n:p[0]+' '+p[p.length-1];}
+
+/* ════════ FILTER ENGINE ════════ */
+function getFiltered(extraArea){
+  return DATA.filter(r=>{
+    const area=extraArea||FS.area;
+    if(area && r.area!==area) return false;
+    if(FS.sem && r.sem!==FS.sem) return false;
+    if(FS.nodo && r.nodo!==FS.nodo) return false;
+    if(FS.prior && r.prior!==FS.prior) return false;
+    if(FS.estado && r.estado!==FS.estado) return false;
+    if(FS.resp && r.creador!==FS.resp) return false;
+    if(FS.tipo && r.tipoReq!==FS.tipo) return false;
+    for(const[k,v] of Object.entries(CF)){
+      if(k==='area'  && r.area!==v) return false;
+      if(k==='nodo'  && r.nodo!==v) return false;
+      if(k==='prior' && r.prior!==v) return false;
+      if(k==='resp'  && r.resp!==v) return false;
+      if(k==='estado'&& r.estado!==v) return false;
+      if(k==='sem'   && r.sem!==v) return false;
+      if(k==='tipo'  && r.tipoReq!==v) return false;
+      if(k==='tipoReq' && r.tipoReq!==v) return false;
+      if(k==='pilar' && r.pilar!==v) return false;
+    }
+    return true;
+  });
+}
+
+function setCF(key,value){
+  if(CF[key]===value){delete CF[key];}else{CF[key]=value;}
+  renderChips();renderAll();
+}
+function clearCF(key){delete CF[key];renderChips();renderAll();}
+function clearAll(){
+  FS={sem:'',area:'',nodo:'',prior:'',estado:'',resp:'',tipo:''};
+  CF={};
+  ['fSem','fArea','fNodo','fPrior','fEst','fResp','fTipo'].forEach(id=>{if($(id)){$(id).value='';$(id).classList.remove('on');}});
+  $('btnClear').style.display='none';
+  renderChips();renderAll();
+}
+function renderChips(){
+  const bar=$('chipBar');
+  if(!bar)return;
+  bar.innerHTML='';
+  const chips=Object.entries(CF);
+  if(!chips.length){
+    bar.innerHTML='<span class="chip-hint" id="chipHint">Clic en cualquier gráfico para filtrar por cliente, área, estado, etc.</span>';
+    return;
+  }
+  bar.innerHTML='<span style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;font-weight:700">Filtros activos:</span>';
+  chips.forEach(([k,v])=>{
+    const c=document.createElement('div');
+    c.className='chip';
+    const displayKey=k==='nodo'?'cliente':k==='tipoReq'?'tipo req.':k==='resp'?'creador':k;
+    const label=String(v).length>22?String(v).slice(0,22)+'…':String(v);
+    c.innerHTML=`<span>${displayKey}:</span> ${label} ✕`;
+    c.onclick=()=>clearCF(k);
+    bar.appendChild(c);
+  });
+}
+function applyFilters(){
+  FS.sem=$('fSem').value;FS.area=$('fArea').value;FS.nodo=$('fNodo').value;
+  FS.prior=$('fPrior').value;FS.estado=$('fEst').value;FS.resp=$('fResp').value;FS.tipo=$('fTipo').value;
+  ['fSem','fArea','fNodo','fPrior','fEst','fResp','fTipo'].forEach(id=>{if($(id))$(id).classList.toggle('on',!!$(id).value);});
+  const hasAny=Object.values(FS).some(Boolean)||Object.keys(CF).length;
+  $('btnClear').style.display=hasAny?'inline-block':'none';
+  updateNodoDropdown();renderAll();
+}
+function updateNodoDropdown(forArea){
+  const area=forArea||FS.area||(ACTIVE_TAB==='aa'?'Anglo American':ACTIVE_TAB==='co'?'Codelco':ACTIVE_TAB==='ind'?'Industria':'');
+  const sel=$('fNodo');const cur=sel.value;
+  while(sel.options.length>1)sel.remove(1);
+  const nodos=[...new Set(DATA.filter(r=>!area||r.area===area).map(r=>r.nodo).filter(Boolean))].sort();
+  nodos.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n.length>30?n.slice(0,30)+'…':n;sel.appendChild(o);});
+  if(nodos.includes(cur))sel.value=cur;
+}
+
+/* ════════ CHART FACTORY ════════ */
+const GC='rgba(0,159,227,.06)';
+const TC='rgba(138,147,171,.7)';
+
+/* BEL-RAY colors for charts */
+const BR_BLUE='#009FE3';
+const BR_CYAN='#33C3F0';
+const BR_GREEN='#22C55E';
+const BR_AMBER='#F59E0B';
+const BR_RED='#EF4444';
+const BR_DARK='rgba(0,159,227,.15)';
+
+/* Data label plugin config */
+const DLP_WHITE  = {color:'#FFFFFF',font:{size:11,weight:'700',family:"'Barlow',sans-serif"}};
+const DLP_CYAN   = {color:'#33C3F0',font:{size:11,weight:'700',family:"'Barlow',sans-serif"}};
+const DLP_YELLOW = {color:'#FFD966',font:{size:11,weight:'700',family:"'Barlow',sans-serif"}};
+
+function mk(id,type,data,options){
+  const el=$(id);if(!el)return;
+  if(CHARTS[id]){CHARTS[id].destroy();}
+  const {onClick, ...opts} = options||{};
+  const cfg = {
+    type, data,
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+        datalabels:{display:false},
+        ...(opts.plugins||{})
+      },
+      ...opts,
+      ...(onClick ? {onClick:(e)=>{
+        try{
+          const chart=CHARTS[id];
+          if(!chart)return;
+          const els=chart.getElementsAtEventForMode(e,'nearest',{intersect:true},true);
+          onClick(e,els);
+        }catch(err){console.warn('chart click error:',err);}
+      }} : {})
+    }
+  };
+  CHARTS[id]=new Chart(el,cfg);
+  return CHARTS[id];
+}
+
+function mkScales(opts={}){
+  return {scales:{
+    x:{ticks:{color:TC,font:{size:10},...(opts.xTicks||{})},grid:{color:GC},border:{display:false},...(opts.x||{})},
+    y:{ticks:{color:TC,font:{size:10},...(opts.yTicks||{})},grid:{color:GC},border:{display:false},...(opts.y||{})}
+  }};
+}
+
+/* ── shared label configs ── */
+/* above-bar label (dark bg → bright white text) */
+const LBL_TOP = {
+  display:true,
+  anchor:'end', align:'end',
+  offset:3,
+  color:'#FFFFFF',
+  font:{size:11,weight:'700',family:"'Barlow',sans-serif"},
+  formatter:(v)=>(v===null||v===undefined||v==='')?'':v,
+};
+/* inside stacked bar (coloured fill → white) */
+const LBL_MID = {
+  display:(ctx)=>ctx.dataset.data[ctx.dataIndex]>0,
+  anchor:'center', align:'center',
+  color:'#FFFFFF',
+  font:{size:10,weight:'700',family:"'Barlow',sans-serif"},
+  formatter:(v)=>v>0?v:'',
+};
+/* line point label */
+const LBL_LINE = {
+  display:true,
+  anchor:'end', align:'top',
+  offset:5,
+  color:'#33C3F0',
+  font:{size:11,weight:'700',family:"'Barlow',sans-serif"},
+  formatter:(v)=>v===null?'':v,
+};
+/* percentage label */
+const LBL_PCT = {
+  ...LBL_TOP,
+  formatter:(v)=>v===null?'':(v+'%'),
+};
+/* horizontal bar label (right of bar) */
+const LBL_RIGHT = {
+  display:true,
+  anchor:'end', align:'right',
+  offset:4,
+  color:'#FFFFFF',
+  font:{size:11,weight:'700',family:"'Barlow',sans-serif"},
+  formatter:(v)=>v===null||v===0?'':v,
+};
+const LBL_RIGHT_PCT = {
+  ...LBL_RIGHT,
+  formatter:(v)=>v===null||v===0?'':(v+'%'),
+};
+
+/* ════════ BADGE/TABLE HELPERS ════════ */
+function priorB(p){
+  if(!p)return '<span class="b bn">—</span>';
+  if(p.includes('Crítica'))    return '<span class="b br">P1</span>';
+  if(p.includes('Importante')) return '<span class="b ba">P2</span>';
+  if(p.includes('Normal'))     return '<span class="b bb">P3</span>';
+  return '<span class="b bg" style="color:#4a7a64">P4</span>';
+}
+function estB(e){
+  if(e==='Listo')       return '<span class="b bg">✓ Listo</span>';
+  if(e==='En progreso') return '<span class="b bb">⏵ Progreso</span>';
+  return '<span class="b ba">○ Abierto</span>';
+}
+function diasB(comp,estado){
+  if(!comp||estado==='Listo')return '<span style="color:var(--text3)">—</span>';
+  const d=daysAgo(comp);
+  if(d>0)return `<span style="color:var(--red);font-weight:700">${d>0?'+':''}${d}d</span>`;
+  if(d<0)return `<span style="color:var(--green)">${d}d</span>`;
+  return '<span style="color:var(--amber)">Hoy</span>';
+}
+function renderTable(bodyId,rows,includeArea){
+  const el=$(bodyId);if(!el)return;
+  if(!rows.length){el.innerHTML='<tr class="empty"><td colspan="10">Sin requerimientos con los filtros seleccionados</td></tr>';return;}
+  el.innerHTML=rows.map(r=>{
+    const n=r.nodo?(r.nodo.length>24?r.nodo.slice(0,24)+'…':r.nodo):'—';
+    const rr=shortName(r.creador);
+    const t=r.tarea.length>50?r.tarea.slice(0,50)+'…':r.tarea;
+    const areaCol=includeArea?`<td style="font-size:10px;white-space:nowrap">${r.area}</td>`:'';
+    const entregable=r.entregable
+      ?`<a href="${r.entregable}" target="_blank" style="color:var(--br-blue3);font-size:10px;text-decoration:none;display:inline-flex;align-items:center;gap:3px;border:1px solid rgba(0,159,227,.3);border-radius:4px;padding:2px 6px;background:rgba(0,159,227,.06)" title="${r.entregable}">🔗 Ver</a>`
+      :'<span style="color:var(--text3);font-size:10px">—</span>';
+    return `<tr><td class="tn" title="${r.tarea}">${t}</td>${areaCol}<td style="font-size:10px;color:var(--text3)">${n}</td><td style="font-size:10px">${rr}</td><td>${priorB(r.prior)}</td><td>${estB(r.estado)}</td><td style="font-family:var(--mono);font-size:10px">${fmtDate(r.comp)}</td><td>${diasB(r.comp,r.estado)}</td><td style="font-family:var(--mono);font-size:10px;color:var(--text3)">${r.sem||'—'}</td><td>${entregable}</td></tr>`;
+  }).join('');
+}
+function searchT(id,q){
+  const ql=q.toLowerCase();
+  document.querySelectorAll(`#${id} tr`).forEach(r=>r.style.display=r.textContent.toLowerCase().includes(ql)?'':'none');
+}
+
+/* ════════ RENDER RESUMEN ════════ */
+function renderResumen(){
+  const d=getFiltered();
+  const total=d.length;
+  const listo=d.filter(r=>r.estado==='Listo').length;
+  const prog=d.filter(r=>r.estado==='En progreso').length;
+  const sin=d.filter(r=>r.estado==='Sin empezar').length;
+  const withComp=d.filter(r=>r.comp);
+  const listComp=withComp.filter(r=>r.estado==='Listo').length;
+  const venc=d.filter(r=>r.comp&&r.estado!=='Listo'&&daysAgo(r.comp)>0).length;
+  const crit=d.filter(r=>r.prior==='Crítica (P1)'&&r.estado!=='Listo').length;
+  const critT=d.filter(r=>r.prior==='Crítica (P1)').length;
+  const pct=total?Math.round(listo/total*100):0;
+  const cumpl=total?Math.round(listo/total*100):0;
+  const bk=d.filter(r=>r.estado!=='Listo');
+  let avgA=0;bk.forEach(r=>{avgA+=r.comp?Math.max(0,daysAgo(r.comp)):15;});
+  avgA=bk.length?Math.round(avgA/bk.length):0;
+
+  $('r-total').textContent=total;$('r-total-s').textContent=`en selección`;
+  $('r-listo').textContent=listo;$('r-listo-s').textContent=`${pct}% del total`;
+  $('r-prog').textContent=prog;$('r-prog-s').textContent=`${total?Math.round(prog/total*100):0}% del total`;
+  $('r-sin').textContent=sin;$('r-sin-s').textContent=`${total?Math.round(sin/total*100):0}% del total`;
+  $('r-venc').textContent=venc;
+  $('r-cumpl').textContent=`${cumpl}%`;$('r-cumpl-s').textContent=`${listo}/${total} cerrados`;
+  $('r-crit').textContent=crit;$('r-crit-s').textContent=`${crit} de ${critT} P1 abiertas`;
+  $('r-antig').textContent=`${avgA}d`;
+  // Velocidad de cierre: req cerrados / semanas activas con datos
+  const semsCierre=[...new Set(d.filter(r=>r.estado==='Listo'&&r.semCierre).map(r=>r.semCierre))];
+  const vel=semsCierre.length?+(listo/semsCierre.length).toFixed(1):0;
+  $('r-tasa').textContent=vel>0?vel+'x':'—';
+  $('r-tasa-s').textContent=vel>0?`cerrados en ${semsCierre.length} sem`:'sin cierres';
+  // Top tipo de requerimiento
+  const trMap={};d.forEach(r=>{const k=r.tipoReq||'Sin tipo';if(!trMap[k])trMap[k]=0;trMap[k]++;});
+  const trTop=Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0];
+  if(trTop){
+    const lbl=trTop[0].length>20?trTop[0].slice(0,20)+'…':trTop[0];
+    $('r-top-tipo').textContent=lbl;
+    $('r-top-tipo-s').textContent=`${trTop[1]} veces registrado`;
+  } else {
+    $('r-top-tipo').textContent='—';$('r-top-tipo-s').textContent='sin datos';
+  }
+  $('r-table-title').textContent=`${total} requerimiento${total!==1?'s':''}`;
+  $('fcount').textContent=Object.values({...FS,...CF}).some(Boolean)?`${total} resultado${total!==1?'s':''}`:'' ;
+
+  /* ── Donut estado ── */
+  mk('cDonut','doughnut',{labels:['Listo','En progreso','Sin empezar'],datasets:[{
+    data:[listo,prog,sin],
+    backgroundColor:[BR_GREEN,BR_BLUE,BR_AMBER],
+    borderWidth:2,borderColor:'#1C1C1C',hoverOffset:6,
+    datalabels:{
+      display:(ctx)=>ctx.dataset.data[ctx.dataIndex]>0,
+      color:(ctx)=>[BR_GREEN,BR_BLUE,BR_AMBER][ctx.dataIndex]||'#FFFFFF',
+      font:{size:11,weight:'700',family:"'Barlow',sans-serif"},
+      anchor:'end',align:'end',offset:10,
+      formatter:(v,ctx)=>{
+        const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);
+        if(!tot||!v)return '';
+        const lbls=['Listo','Progreso','Abierto'];
+        return lbls[ctx.dataIndex]+'\n'+v+' ('+Math.round(v/tot*100)+'%)';
+      },
+      textAlign:'center',clamp:false,
+    }
+  }]},{
+    cutout:'58%',layout:{padding:{top:40,bottom:40,left:60,right:60}},
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+      datalabels:{display:false}
+    }
+  });
+  $('dlEstado').innerHTML=[['Listo',listo,BR_GREEN],['En progreso',prog,BR_BLUE],['Sin empezar',sin,BR_AMBER]].map(([l,n,c])=>`<div class="dl-row"><span style="display:flex;align-items:center;gap:5px;color:var(--text2);font-size:11px"><div class="dl-dot" style="background:${c}"></div>${l}</span><strong style="font-family:var(--font);color:var(--text);font-size:11px">${n} <span style="color:var(--text3);font-weight:400">(${total?Math.round(n/total*100):0}%)</span></strong></div>`).join('');
+
+  /* ── Barras 100% áreas ── */
+  const areas=['Anglo American','Codelco','Industria','Mesa de Confiabilidad'];
+  const aShort=['Anglo Am.','Codelco','Industria','Mesa Conf.'];
+  const aData=areas.map(a=>{const s=d.filter(r=>r.area===a);const t=s.length||1;return{lis:+(s.filter(r=>r.estado==='Listo').length/t*100).toFixed(1),pro:+(s.filter(r=>r.estado==='En progreso').length/t*100).toFixed(1),sin:+(s.filter(r=>r.estado==='Sin empezar').length/t*100).toFixed(1),t:s.length};});
+  mk('cArea100','bar',{labels:aShort,datasets:[
+    {label:'Listo',      data:aData.map(a=>a.lis),backgroundColor:BR_GREEN+'CC',stack:'s',
+     datalabels:{...LBL_MID, formatter:(v)=>v>5?v.toFixed(0)+'%':''}},
+    {label:'En progreso',data:aData.map(a=>a.pro),backgroundColor:BR_BLUE+'CC', stack:'s',
+     datalabels:{...LBL_MID, formatter:(v)=>v>5?v.toFixed(0)+'%':''}},
+    {label:'Sin empezar',data:aData.map(a=>a.sin),backgroundColor:BR_AMBER+'CC',stack:'s',
+     datalabels:{...LBL_MID, formatter:(v)=>v>5?v.toFixed(0)+'%':''}},
+  ]},{
+    layout:{padding:{top:8}},
+    ...mkScales({y:{max:100,ticks:{color:TC,font:{size:10},callback:v=>v+'%'}}}),
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+      datalabels:{display:false}},
+    onClick(e,el){if(el.length){setCF('area',areas[el[0].index]);}}
+  });
+
+  /* ── LÍNEA: Requerimientos recibidos ── */
+  const semLabels=SEMANAS.map(s=>s.replace('2026-',''));
+  const semCounts=SEMANAS.map(s=>d.filter(r=>r.sem===s).length);
+  const avgCount=semCounts.length?+(semCounts.reduce((a,b)=>a+b,0)/semCounts.length).toFixed(1):0;
+  const avgLine=semCounts.map(()=>avgCount);
+  mk('cIngreso','line',{labels:semLabels,datasets:[
+    {label:'Requerimientos',data:semCounts,borderColor:BR_BLUE,backgroundColor:'rgba(0,159,227,.15)',fill:true,tension:.35,
+     pointRadius:6,pointHoverRadius:9,pointBackgroundColor:BR_BLUE,pointBorderColor:'#111',pointBorderWidth:2,borderWidth:2.5,
+     datalabels:{...LBL_TOP, formatter:v=>v>0?v:''}},
+    {label:'Promedio',data:avgLine,borderColor:'rgba(51,195,240,.65)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false,
+     datalabels:{display:false}},
+  ]},{
+    layout:{padding:{top:30,right:12}},
+    ...mkScales({y:{min:0}}),
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6,
+        callbacks:{footer:(items)=>{if(items[0]?.datasetIndex===0)return `Promedio: ${avgCount}`;}}},
+      datalabels:{display:false}},
+    onClick(e,el){if(el.length){setCF('sem',SEMANAS[el[0].index]);}}
+  });
+
+  /* ── COMBO: Comprometidas por semana (barras) + % cumplimiento semanal (línea) ── */
+  // Comprometidas: reqs cuya fecha de compromiso cae en esa semana (según sem del dato o inferido de comp)
+  // Cumplimiento semanal: cerrados con comp en esa semana / comprometidas esa semana * 100
+  const comprometidas=SEMANAS.map(s=>{
+    // semana de la fecha comp: comparamos la semana ISO de r.comp con s
+    return d.filter(r=>{
+      if(!r.comp)return false;
+      const dt=new Date(r.comp);
+      // Calcular semana ISO de la fecha de compromiso
+      const tmp=new Date(Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate()));
+      const dayNum=tmp.getUTCDay()||7;
+      tmp.setUTCDate(tmp.getUTCDate()+4-dayNum);
+      const yearStart=new Date(Date.UTC(tmp.getUTCFullYear(),0,1));
+      const wk=Math.ceil((((tmp-yearStart)/86400000)+1)/7);
+      const isoSem=`${tmp.getUTCFullYear()}-W${String(wk).padStart(2,'0')}`;
+      return isoSem===s;
+    }).length;
+  });
+  const pctCumplSem=SEMANAS.map((s,i)=>{
+    const comp=comprometidas[i];
+    if(!comp)return null;
+    // cerrados cuya fecha comp cae en esa semana
+    const cerrados=d.filter(r=>{
+      if(!r.comp||r.estado!=='Listo')return false;
+      const dt=new Date(r.comp);
+      const tmp=new Date(Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate()));
+      const dayNum=tmp.getUTCDay()||7;
+      tmp.setUTCDate(tmp.getUTCDate()+4-dayNum);
+      const yearStart=new Date(Date.UTC(tmp.getUTCFullYear(),0,1));
+      const wk=Math.ceil((((tmp-yearStart)/86400000)+1)/7);
+      const isoSem=`${tmp.getUTCFullYear()}-W${String(wk).padStart(2,'0')}`;
+      return isoSem===s;
+    }).length;
+    return Math.round(cerrados/comp*100);
+  });
+  mk('cCumplSem','bar',{labels:semLabels,datasets:[
+    {label:'Comprometidas',data:comprometidas,backgroundColor:'rgba(0,159,227,.45)',borderColor:'rgba(0,159,227,.8)',borderWidth:1,borderRadius:4,
+     yAxisID:'yBar',order:2,
+     datalabels:{...LBL_TOP, formatter:v=>v>0?v:''}},
+    {label:'% Cumplimiento',data:pctCumplSem,borderColor:BR_GREEN,backgroundColor:BR_GREEN+'30',fill:false,tension:.4,
+     type:'line',pointRadius:6,pointHoverRadius:9,pointBackgroundColor:BR_GREEN,pointBorderColor:'#111',pointBorderWidth:2,borderWidth:2.5,spanGaps:true,
+     yAxisID:'yPct',order:1,
+     datalabels:{color:'#FFFFFF',font:{size:10,weight:'700',family:"'Barlow',sans-serif"},anchor:'end',align:'end',offset:6,formatter:v=>v!==null?v+'%':''}},
+    {label:'Meta 70%',data:SEMANAS.map(_=>70),borderColor:'rgba(255,255,255,.18)',borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false,
+     type:'line',yAxisID:'yPct',order:3,
+     datalabels:{display:false}},
+  ]},{
+    layout:{padding:{top:34,right:12}},
+    scales:{
+      yBar:{type:'linear',position:'left',min:0,ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false},title:{display:true,text:'Comprometidas',color:TC,font:{size:9}}},
+      yPct:{type:'linear',position:'right',min:0,max:120,ticks:{color:TC,font:{size:10},callback:v=>v+'%'},grid:{display:false},border:{display:false},title:{display:true,text:'% Cumplimiento',color:TC,font:{size:9}}},
+      x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}}
+    },
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+      datalabels:{display:false}}
+  });
+
+  /* ── Prioridad bar ── */
+  const pK=['Crítica (P1)','Importante (P2)','Normal (P3)','Baja (P4)','Sin definir'];
+  const pColors=[BR_RED,BR_AMBER,BR_BLUE,BR_GREEN+'90','#4A5270'];
+  const pCounts=pK.map(p=>p==='Sin definir'?d.filter(r=>!r.prior).length:d.filter(r=>r.prior===p).length);
+  mk('cPriorBar','bar',{
+    labels:pK.map(p=>p.replace(' (P1)','').replace(' (P2)','').replace(' (P3)','').replace(' (P4)','')),
+    datasets:[{data:pCounts,backgroundColor:pColors,borderRadius:5,
+      datalabels:{...LBL_TOP, formatter:v=>v>0?v:''}}]
+  },{
+    layout:{padding:{top:30}},
+    ...mkScales({y:{min:0}}),
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+      datalabels:{display:false}},
+    onClick(e,el){if(el.length){const p=pK[el[0].index];if(p!=='Sin definir')setCF('prior',p);}}
+  });
+
+  /* ── Pilar stacked (Listo vs Backlog) ── */
+  const pilM={};
+  d.forEach(r=>{const pk=r.pilar||'Sin pilar';if(!pilM[pk])pilM[pk]={l:0,b:0};if(r.estado==='Listo')pilM[pk].l++;else pilM[pk].b++;});
+  const pilArr=Object.entries(pilM).sort((a,b)=>(b[1].l+b[1].b)-(a[1].l+a[1].b));
+  mk('cPilarResBar','bar',{labels:pilArr.map(([n])=>n.length>22?n.slice(0,22)+'…':n),datasets:[
+    {label:'Listo',  data:pilArr.map(([,v])=>v.l),backgroundColor:BR_GREEN+'90',stack:'s',
+     datalabels:{...LBL_MID, formatter:v=>v>0?v:''}},
+    {label:'Backlog',data:pilArr.map(([,v])=>v.b),backgroundColor:BR_RED+'80',stack:'s',
+     datalabels:{...LBL_MID, formatter:v=>v>0?v:''}},
+  ]},{
+    layout:{padding:{top:8}},
+    ...mkScales(),
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+      datalabels:{display:false}},
+    onClick(e,el){if(el.length){const pk=pilArr[el[0].index][0];if(pk!=='Sin pilar')setCF('pilar',pk);}}
+  });
+
+  /* ── Nodos ranking horizontal ── */
+  const nM={};
+  d.forEach(r=>{const nk=r.nodo||'Sin cliente';if(!nM[nk])nM[nk]={l:0,b:0,v:0};if(r.estado==='Listo')nM[nk].l++;else{nM[nk].b++;if(r.comp&&daysAgo(r.comp)>0)nM[nk].v++;}});
+  const nArr=Object.entries(nM).filter(([,v])=>v.b>0).sort((a,b)=>b[1].b-a[1].b).slice(0,10);
+  const nH=Math.max(nArr.length*40+60,160);
+  if($('cNodoBar'))$('cNodoBar').parentElement.style.height=nH+'px';
+  mk('cNodoBar','bar',{labels:nArr.map(([nk])=>nk.length>24?nk.slice(0,24)+'…':nk),datasets:[
+    {label:'Backlog',data:nArr.map(([,v])=>v.b),
+     backgroundColor:nArr.map(([,v])=>v.v>0?BR_RED+'CC':'rgba(0,159,227,.7)'),borderRadius:4,
+     datalabels:{...LBL_RIGHT, formatter:v=>v>0?v:''}},
+  ]},{
+    indexAxis:'y',layout:{padding:{right:36}},
+    scales:{x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false}}},
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+      datalabels:{display:false}},
+    onClick(e,el){if(el.length){const nk=nArr[el[0].index][0];if(nk!=='Sin cliente')setCF('nodo',nk);}}
+  });
+
+  /* ── Tipos de Requerimiento ranking (replaces Formal/Basal) ── */
+  const tipoReqM={};
+  d.forEach(r=>{
+    // Use Tipos de Requerimiento field if available, else fallback to tipo
+    const key=r.tipoReq||r.tipo||'Sin tipo';
+    if(!tipoReqM[key])tipoReqM[key]=0;
+    tipoReqM[key]++;
+  });
+  const tipoReqArr=Object.entries(tipoReqM).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const trH=Math.max(tipoReqArr.length*32+50,160);
+  if($('cTipoReqBar'))$('cTipoReqBar').parentElement.style.height=trH+'px';
+  mk('cTipoReqBar','bar',{
+    labels:tipoReqArr.map(([k])=>k.length>30?k.slice(0,30)+'…':k),
+    datasets:[{
+      data:tipoReqArr.map(([,v])=>v),
+      backgroundColor:tipoReqArr.map((_,i)=>{
+        const colors=['rgba(0,159,227,.85)','rgba(0,159,227,.75)','rgba(51,195,240,.8)','rgba(51,195,240,.65)','rgba(0,122,184,.8)','rgba(0,122,184,.65)','rgba(0,159,227,.55)','rgba(51,195,240,.5)','rgba(0,122,184,.5)','rgba(100,180,220,.5)'];
+        return colors[i]||'rgba(0,159,227,.4)';
+      }),
+      borderRadius:4,
+      datalabels:{...LBL_RIGHT, formatter:v=>v>0?v:''}
+    }]
+  },{
+    indexAxis:'y',
+    layout:{padding:{right:36}},
+    scales:{
+      x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},
+      y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false}}
+    },
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+      datalabels:{display:false}},
+    onClick(e,el){if(el.length){const k=tipoReqArr[el[0].index][0];if(k!=='Sin tipo')setCF('tipoReq',k);}}
+  });
+
+  /* ── Pilar ranking horizontal (main ranking) ── */
+  const pilRankM={};
+  d.forEach(r=>{
+    if(!r.pilar)return;
+    // Split multi-pillar entries
+    r.pilar.split(',').forEach(p=>{
+      const pk=p.trim();
+      if(!pilRankM[pk])pilRankM[pk]=0;
+      pilRankM[pk]++;
+    });
+  });
+  const pilRankArr=Object.entries(pilRankM).sort((a,b)=>b[1]-a[1]);
+  const prH=Math.max(pilRankArr.length*36+50,120);
+  if($('cPilarRankBar'))$('cPilarRankBar').parentElement.style.height=prH+'px';
+  mk('cPilarRankBar','bar',{
+    labels:pilRankArr.map(([p])=>p),
+    datasets:[{
+      data:pilRankArr.map(([,v])=>v),
+      backgroundColor:pilRankArr.map(([,v],i)=>{
+        const mx=pilRankArr[0][1];
+        const ratio=v/mx;
+        return `rgba(0,159,227,${0.4+ratio*0.55})`;
+      }),
+      borderRadius:4,
+      datalabels:{...LBL_RIGHT, formatter:v=>v>0?v:''}
+    }]
+  },{
+    indexAxis:'y',
+    layout:{padding:{right:36}},
+    scales:{
+      x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},
+      y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false}}
+    },
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},
+      datalabels:{display:false}},
+    onClick(e,el){if(el.length){setCF('pilar',pilRankArr[el[0].index][0]);}}
+  });
+
+  /* ── Carga por creador (Listo vs Backlog) ── */
+  const creadorM={};
+  d.forEach(r=>{
+    const ck=r.creador||'Sin creador';
+    if(!creadorM[ck])creadorM[ck]={l:0,b:0};
+    if(r.estado==='Listo')creadorM[ck].l++;
+    else creadorM[ck].b++;
+  });
+  const crArr=Object.entries(creadorM)
+    .map(([n,v])=>[n,v.l,v.b,v.l+v.b])
+    .sort((a,b)=>b[3]-a[3]);
+  const crH=Math.max(crArr.length*38+60,160);
+  if($('cCreadorBar'))$('cCreadorBar').parentElement.style.height=crH+'px';
+  mk('cCreadorBar','bar',{
+    labels:crArr.map(([n])=>n.length>26?n.slice(0,26)+'…':n),
+    datasets:[
+      {label:'Listo',  data:crArr.map(([,l])=>l), backgroundColor:BR_GREEN+'99', stack:'s', borderRadius:0,
+       datalabels:{display:ctx=>crArr[ctx.dataIndex][1]>0, color:'#fff', font:{size:9,weight:'700',family:"'Barlow',sans-serif"}, formatter:v=>v}},
+      {label:'Backlog',data:crArr.map(([,,b])=>b), backgroundColor:BR_RED+'88',   stack:'s', borderRadius:4,
+       datalabels:{display:ctx=>crArr[ctx.dataIndex][2]>0, color:'#fff', font:{size:9,weight:'700',family:"'Barlow',sans-serif"}, formatter:v=>v}},
+    ]
+  },{
+    indexAxis:'y',
+    layout:{padding:{right:48}},
+    scales:{
+      x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false},stacked:true},
+      y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false},stacked:true}
+    },
+    plugins:{
+      legend:{
+        display:true,
+        position:'top',
+        labels:{color:TC,font:{size:10,family:"'Barlow',sans-serif"},boxWidth:10,padding:12}
+      },
+      tooltip:{
+        backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,
+        titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6,
+        callbacks:{
+          title:ctx=>{const i=ctx[0].dataIndex;return crArr[i][0];},
+          afterBody:ctx=>{
+            const i=ctx[0].dataIndex;
+            const [,l,b,t]=crArr[i];
+            const pct=t?Math.round(l/t*100):0;
+            return [`Total: ${t} req.`,`Completado: ${pct}%`];
+          }
+        }
+      },
+      datalabels:{display:false}
+    },
+    onClick(e,el){
+      if(el.length){
+        const ck=crArr[el[0].index][0];
+        if(ck!=='Sin creador')setCF('resp',ck);
+      }
+    }
+  });
+
+  renderTable('tResBody',d,true);
+}
+
+/* ════════ RENDER ÁREA (full — same charts as Resumen, filtered by area) ════════ */
+function renderArea(areaName,pfx){
+  const d=getFiltered(areaName);
+  const total=d.length;
+  const listo=d.filter(r=>r.estado==='Listo').length;
+  const prog=d.filter(r=>r.estado==='En progreso').length;
+  const sin=d.filter(r=>r.estado==='Sin empezar').length;
+  const venc=d.filter(r=>r.comp&&r.estado!=='Listo'&&daysAgo(r.comp)>0).length;
+  const crit=d.filter(r=>r.prior==='Crítica (P1)'&&r.estado!=='Listo').length;
+  const critT=d.filter(r=>r.prior==='Crítica (P1)').length;
+  const pct=total?Math.round(listo/total*100):0;
+  const bk=d.filter(r=>r.estado!=='Listo');
+  let avgA=0;bk.forEach(r=>{avgA+=r.comp?Math.max(0,daysAgo(r.comp)):15;});
+  avgA=bk.length?Math.round(avgA/bk.length):0;
+  const semsCierreA=[...new Set(d.filter(r=>r.estado==='Listo'&&r.semCierre).map(r=>r.semCierre))];
+  const vel=semsCierreA.length?+(listo/semsCierreA.length).toFixed(1):0;
+  const trMapA={};d.forEach(r=>{const k=r.tipoReq||'Sin tipo';if(!trMapA[k])trMapA[k]=0;trMapA[k]++;});
+  const trTopA=Object.entries(trMapA).sort((a,b)=>b[1]-a[1])[0];
+  const P=pfx+'-';
+
+  $(P+'total').textContent=total;$(P+'total-s').textContent='en selección';
+  $(P+'listo').textContent=listo;$(P+'listo-s').textContent=`${pct}% del total`;
+  $(P+'prog').textContent=prog;$(P+'prog-s').textContent=`${total?Math.round(prog/total*100):0}% del total`;
+  $(P+'sin').textContent=sin;$(P+'sin-s').textContent=`${total?Math.round(sin/total*100):0}% del total`;
+  $(P+'cumpl').textContent=`${pct}%`;$(P+'cumpl-s').textContent=`${listo}/${total} cerrados`;
+  $(P+'venc').textContent=venc;
+  $(P+'crit').textContent=crit;$(P+'crit-s').textContent=`${crit} de ${critT} P1 abiertas`;
+  $(P+'antig').textContent=`${avgA}d`;
+  $(P+'tasa').textContent=vel>0?vel+'x':'—';$(P+'tasa-s').textContent=vel>0?`cerrados en ${semsCierreA.length} sem`:'sin cierres';
+  if(trTopA){
+    const lbl=trTopA[0].length>20?trTopA[0].slice(0,20)+'…':trTopA[0];
+    $(P+'top-tipo').textContent=lbl;$(P+'top-tipo-s').textContent=`${trTopA[1]} veces registrado`;
+  }else{$(P+'top-tipo').textContent='—';$(P+'top-tipo-s').textContent='sin datos';}
+  $(pfx+'-tt').textContent=`${areaName} · ${total} requerimiento${total!==1?'s':''}`;
+
+  const ID=s=>'c'+pfx.charAt(0).toUpperCase()+pfx.slice(1)+s;
+
+  /* ── Barras 100% por cliente ── */
+  const clientesA=[...new Set(d.map(r=>r.nodo).filter(Boolean))].sort();
+  const ca100L=clientesA.map(c=>d.filter(r=>r.nodo===c&&r.estado==='Listo').length);
+  const ca100P=clientesA.map(c=>d.filter(r=>r.nodo===c&&r.estado==='En progreso').length);
+  const ca100S=clientesA.map(c=>d.filter(r=>r.nodo===c&&r.estado==='Sin empezar').length);
+  const ca100T=clientesA.map((_,i)=>ca100L[i]+ca100P[i]+ca100S[i]);
+  const aShortA=clientesA.map(n=>n.length>18?n.slice(0,18)+'…':n);
+  mk(ID('100'),'bar',{labels:aShortA,datasets:[
+    {label:'Listo',    data:ca100L.map((v,i)=>ca100T[i]?Math.round(v/ca100T[i]*100):0),backgroundColor:BR_GREEN+'CC',stack:'s',datalabels:{...LBL_MID,formatter:(v)=>v>5?v+'%':''}},
+    {label:'Progreso', data:ca100P.map((v,i)=>ca100T[i]?Math.round(v/ca100T[i]*100):0),backgroundColor:BR_BLUE+'CC',stack:'s', datalabels:{...LBL_MID,formatter:(v)=>v>5?v+'%':''}},
+    {label:'Sin emp.', data:ca100S.map((v,i)=>ca100T[i]?Math.round(v/ca100T[i]*100):0),backgroundColor:BR_AMBER+'CC',stack:'s',datalabels:{...LBL_MID,formatter:(v)=>v>5?v+'%':''}},
+  ]},{
+    layout:{padding:{top:8}},
+    ...mkScales({y:{max:100,ticks:{color:TC,font:{size:10},callback:v=>v+'%'}}}),
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}},
+    onClick(e,el){if(el.length){setCF('nodo',clientesA[el[0].index]);}}
+  });
+
+  /* ── Donut estado ── */
+  mk(ID('Donut'),'doughnut',{labels:['Listo','En progreso','Sin empezar'],datasets:[{
+    data:[listo,prog,sin],backgroundColor:[BR_GREEN,BR_BLUE,BR_AMBER],
+    borderWidth:2,borderColor:'#1C1C1C',hoverOffset:6,
+    datalabels:{display:(ctx)=>ctx.dataset.data[ctx.dataIndex]>0,color:(ctx)=>[BR_GREEN,BR_BLUE,BR_AMBER][ctx.dataIndex],font:{size:11,weight:'700',family:"'Barlow',sans-serif"},anchor:'end',align:'end',offset:10,formatter:(v,ctx)=>{const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);if(!tot||!v)return '';const lbls=['Listo','Progreso','Abierto'];return lbls[ctx.dataIndex]+'\\n'+v+' ('+Math.round(v/tot*100)+'%)';},textAlign:'center',clamp:false}
+  }]},{cutout:'58%',layout:{padding:{top:40,bottom:40,left:60,right:60}},plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}}});
+
+  /* ── Ingreso por semana ── */
+  const semLabels=SEMANAS.map(s=>s.replace('2026-','').replace('2025-',''));
+  const semCountsA=SEMANAS.map(s=>d.filter(r=>r.sem===s).length);
+  const avgCA=semCountsA.length?+(semCountsA.reduce((a,b)=>a+b,0)/semCountsA.length).toFixed(1):0;
+  mk(ID('Ingreso'),'line',{labels:semLabels,datasets:[
+    {label:'Recibidos',data:semCountsA,borderColor:BR_BLUE,backgroundColor:BR_BLUE+'25',fill:true,tension:.4,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:BR_BLUE,pointBorderColor:'#111',pointBorderWidth:2,borderWidth:2.5,spanGaps:false,datalabels:{...LBL_TOP,formatter:v=>v>0?v:''}},
+    {label:'Promedio',data:semCountsA.map(()=>avgCA),borderColor:'rgba(255,255,255,.22)',borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false,spanGaps:true,datalabels:{display:false}},
+  ]},{layout:{padding:{top:30,right:12}},...mkScales({y:{min:0}}),plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}},
+    onClick(e,el){if(el.length){setCF('sem',SEMANAS[el[0].index]);}}
+  });
+
+  /* ── Comprometidas vs % cumplimiento ── */
+  const compA=SEMANAS.map(s=>d.filter(r=>r.comp&&isoWeekStr(r.comp)===s).length);
+  const pctCumplA=SEMANAS.map((s,i)=>{
+    const comp=compA[i];if(!comp)return null;
+    const cerr=d.filter(r=>{if(!r.comp||r.estado!=='Listo')return false;return isoWeekStr(r.comp)===s;}).length;
+    return Math.round(cerr/comp*100);
+  });
+  mk(ID('Cumpl'),'bar',{labels:semLabels,datasets:[
+    {label:'Comprometidas',data:compA,backgroundColor:'rgba(0,159,227,.45)',borderColor:'rgba(0,159,227,.8)',borderWidth:1,borderRadius:4,yAxisID:'yBar',order:2,datalabels:{...LBL_TOP,formatter:v=>v>0?v:''}},
+    {label:'% Cumplimiento',data:pctCumplA,borderColor:BR_GREEN,backgroundColor:BR_GREEN+'30',fill:false,tension:.4,type:'line',pointRadius:6,pointHoverRadius:9,pointBackgroundColor:BR_GREEN,pointBorderColor:'#111',pointBorderWidth:2,borderWidth:2.5,spanGaps:true,yAxisID:'yPct',order:1,datalabels:{color:'#FFFFFF',font:{size:10,weight:'700',family:"'Barlow',sans-serif"},anchor:'end',align:'end',offset:6,formatter:v=>v!==null?v+'%':''}},
+    {label:'Meta 70%',data:SEMANAS.map(_=>70),borderColor:'rgba(255,255,255,.18)',borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false,type:'line',yAxisID:'yPct',order:3,datalabels:{display:false}},
+  ]},{
+    layout:{padding:{top:34,right:12}},
+    scales:{yBar:{type:'linear',position:'left',min:0,ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},yPct:{type:'linear',position:'right',min:0,max:120,ticks:{color:TC,font:{size:10},callback:v=>v+'%'},grid:{display:false},border:{display:false}},x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}}},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}}
+  });
+
+  /* ── Prioridad barras ── */
+  const pKA=['Crítica (P1)','Importante (P2)','Normal (P3)','Baja (P4)','Sin definir'];
+  const pColA=[BR_RED,BR_AMBER,BR_BLUE,BR_GREEN+'90','#4A5270'];
+  const pDatA=pKA.map(p=>p==='Sin definir'?d.filter(r=>!r.prior).length:d.filter(r=>r.prior===p).length);
+  mk(ID('PriorBar'),'bar',{labels:['Crítica','Importante','Normal','Baja','S/def'],datasets:[{data:pDatA,backgroundColor:pColA,borderRadius:4,datalabels:{...LBL_TOP,formatter:v=>v>0?v:''}}]},{
+    layout:{padding:{top:30}},...mkScales({y:{min:0}}),
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}},
+    onClick(e,el){if(el.length){const p=pKA[el[0].index];if(p!=='Sin definir')setCF('prior',p);}}
+  });
+
+  /* ── Pilar Listo vs Backlog ── */
+  const pilMA={};
+  d.forEach(r=>{const pk=r.pilar||'Sin pilar';if(!pilMA[pk])pilMA[pk]={l:0,b:0};if(r.estado==='Listo')pilMA[pk].l++;else pilMA[pk].b++;});
+  const pilArrA=Object.entries(pilMA).sort((a,b)=>(b[1].l+b[1].b)-(a[1].l+a[1].b));
+  mk(ID('PilarRes'),'bar',{labels:pilArrA.map(([n])=>n.length>22?n.slice(0,22)+'…':n),datasets:[
+    {label:'Listo',  data:pilArrA.map(([,v])=>v.l),backgroundColor:BR_GREEN+'90',stack:'s',datalabels:{...LBL_MID,formatter:v=>v>0?v:''}},
+    {label:'Backlog',data:pilArrA.map(([,v])=>v.b),backgroundColor:BR_RED+'80',stack:'s', datalabels:{...LBL_MID,formatter:v=>v>0?v:''}},
+  ]},{layout:{padding:{top:8}},...mkScales(),plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}},
+    onClick(e,el){if(el.length){const pk=pilArrA[el[0].index][0];if(pk!=='Sin pilar')setCF('pilar',pk);}}
+  });
+
+  /* ── Nodos backlog ranking ── */
+  const nMA={};
+  d.forEach(r=>{const nk=r.nodo||'Sin cliente';if(!nMA[nk])nMA[nk]={l:0,b:0,v:0};if(r.estado==='Listo')nMA[nk].l++;else{nMA[nk].b++;if(r.comp&&daysAgo(r.comp)>0)nMA[nk].v++;}});
+  const nArrA=Object.entries(nMA).filter(([,v])=>v.b>0).sort((a,b)=>b[1].b-a[1].b).slice(0,10);
+  const nHa=Math.max(nArrA.length*40+60,160);
+  if($(ID('Nodos')))$(ID('Nodos')).parentElement.style.height=nHa+'px';
+  mk(ID('Nodos'),'bar',{labels:nArrA.map(([nk])=>nk.length>24?nk.slice(0,24)+'…':nk),datasets:[{
+    label:'Backlog',data:nArrA.map(([,v])=>v.b),backgroundColor:nArrA.map(([,v])=>v.v>0?BR_RED+'CC':'rgba(0,159,227,.7)'),borderRadius:4,datalabels:{...LBL_RIGHT,formatter:v=>v>0?v:''}
+  }]},{indexAxis:'y',layout:{padding:{right:36}},scales:{x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false}}},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}},
+    onClick(e,el){if(el.length){const nk=nArrA[el[0].index][0];if(nk!=='Sin cliente')setCF('nodo',nk);}}
+  });
+
+  /* ── Tipo requerimiento ranking ── */
+  const tipoMA={};
+  d.forEach(r=>{const key=r.tipoReq||r.tipo||'Sin tipo';if(!tipoMA[key])tipoMA[key]=0;tipoMA[key]++;});
+  const tipoArrA=Object.entries(tipoMA).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const trHA=Math.max(tipoArrA.length*32+50,160);
+  if($(ID('TipoReq')))$(ID('TipoReq')).parentElement.style.height=trHA+'px';
+  mk(ID('TipoReq'),'bar',{labels:tipoArrA.map(([k])=>k.length>30?k.slice(0,30)+'…':k),datasets:[{
+    data:tipoArrA.map(([,v])=>v),
+    backgroundColor:tipoArrA.map((_,i)=>{const cols=['rgba(0,159,227,.85)','rgba(0,159,227,.75)','rgba(51,195,240,.8)','rgba(51,195,240,.65)','rgba(0,122,184,.8)','rgba(0,122,184,.65)','rgba(0,159,227,.55)','rgba(51,195,240,.5)','rgba(0,122,184,.5)','rgba(100,180,220,.5)'];return cols[i]||'rgba(0,159,227,.4)';}),
+    borderRadius:4,datalabels:{...LBL_RIGHT,formatter:v=>v>0?v:''}
+  }]},{indexAxis:'y',layout:{padding:{right:36}},scales:{x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false}}},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}},
+    onClick(e,el){if(el.length){const k=tipoArrA[el[0].index][0];if(k!=='Sin tipo')setCF('tipoReq',k);}}
+  });
+
+  /* ── Pilar ranking ── */
+  const pilRankMA={};
+  d.forEach(r=>{if(!r.pilar)return;r.pilar.split(',').forEach(p=>{const pk=p.trim();if(!pilRankMA[pk])pilRankMA[pk]=0;pilRankMA[pk]++;});});
+  const pilRankArrA=Object.entries(pilRankMA).sort((a,b)=>b[1]-a[1]);
+  const prHA=Math.max(pilRankArrA.length*36+50,120);
+  if($(ID('PilarRank')))$(ID('PilarRank')).parentElement.style.height=prHA+'px';
+  mk(ID('PilarRank'),'bar',{labels:pilRankArrA.map(([p])=>p),datasets:[{
+    data:pilRankArrA.map(([,v])=>v),
+    backgroundColor:pilRankArrA.map(([,v])=>{const mx=pilRankArrA[0]?pilRankArrA[0][1]:1;return `rgba(0,159,227,${0.4+(v/mx)*0.55})`;;}),
+    borderRadius:4,datalabels:{...LBL_RIGHT,formatter:v=>v>0?v:''}
+  }]},{indexAxis:'y',layout:{padding:{right:36}},scales:{x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false}},y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false}}},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6},datalabels:{display:false}},
+    onClick(e,el){if(el.length){setCF('pilar',pilRankArrA[el[0].index][0]);}}
+  });
+
+  /* ── Creador Listo vs Backlog ── */
+  const creadorMA={};
+  d.forEach(r=>{const ck=r.creador||'Sin creador';if(!creadorMA[ck])creadorMA[ck]={l:0,b:0};if(r.estado==='Listo')creadorMA[ck].l++;else creadorMA[ck].b++;});
+  const crArrA=Object.entries(creadorMA).map(([n,v])=>[n,v.l,v.b,v.l+v.b]).sort((a,b)=>b[3]-a[3]);
+  const crHA=Math.max(crArrA.length*38+60,160);
+  if($(ID('Creador')))$(ID('Creador')).parentElement.style.height=crHA+'px';
+  mk(ID('Creador'),'bar',{labels:crArrA.map(([n])=>n.length>26?n.slice(0,26)+'…':n),datasets:[
+    {label:'Listo',  data:crArrA.map(([,l])=>l),backgroundColor:BR_GREEN+'99',stack:'s',borderRadius:0,datalabels:{display:ctx=>crArrA[ctx.dataIndex][1]>0,color:'#fff',font:{size:9,weight:'700',family:"'Barlow',sans-serif"},formatter:v=>v}},
+    {label:'Backlog',data:crArrA.map(([,,b])=>b),backgroundColor:BR_RED+'88',stack:'s',borderRadius:4,datalabels:{display:ctx=>crArrA[ctx.dataIndex][2]>0,color:'#fff',font:{size:9,weight:'700',family:"'Barlow',sans-serif"},formatter:v=>v}},
+  ]},{indexAxis:'y',layout:{padding:{right:48}},
+    scales:{x:{ticks:{color:TC,font:{size:10}},grid:{color:GC},border:{display:false},stacked:true},y:{ticks:{color:TC,font:{size:10}},grid:{display:false},border:{display:false},stacked:true}},
+    plugins:{legend:{display:true,position:'top',labels:{color:TC,font:{size:10,family:"'Barlow',sans-serif"},boxWidth:10,padding:12}},
+      tooltip:{backgroundColor:'#1E1E1E',borderColor:'rgba(0,159,227,.3)',borderWidth:1,titleColor:'#EAECF4',bodyColor:'#8A93AB',padding:10,cornerRadius:6,callbacks:{title:ctx=>{const i=ctx[0].dataIndex;return crArrA[i][0];},afterBody:ctx=>{const i=ctx[0].dataIndex;const[,l,b,t]=crArrA[i];const pct=t?Math.round(l/t*100):0;return[`Total: ${t} req.`,`Completado: ${pct}%`];}}},
+      datalabels:{display:false}},
+    onClick(e,el){if(el.length){const ck=crArrA[el[0].index][0];if(ck!=='Sin creador')setCF('resp',ck);}}
+  });
+
+  renderTable(`t${pfx.toUpperCase()}Body`,d,false);
+}
+
+/* helper: ISO week string from date string */
+function isoWeekStr(dateStr){
+  if(!dateStr)return '';
+  const dt=new Date(dateStr);if(isNaN(dt))return '';
+  dt.setHours(0,0,0,0);dt.setDate(dt.getDate()+3-(dt.getDay()+6)%7);
+  const w1=new Date(dt.getFullYear(),0,4);
+  const wn=1+Math.round(((dt-w1)/86400000-3+(w1.getDay()+6)%7)/7);
+  return dt.getFullYear()+'-W'+String(wn).padStart(2,'0');
+}
+
+/* ════════ RENDER ALL ════════ */
+function renderAll(){
+  if(ACTIVE_TAB==='res') renderResumen();
+  if(ACTIVE_TAB==='aa')  renderArea('Anglo American','aa');
+  if(ACTIVE_TAB==='co')  renderArea('Codelco','co');
+  if(ACTIVE_TAB==='ind') renderArea('Industria','ind');
+}
+
+/* ════════ TAB NAV ════════ */
+function goTab(name){
+  ACTIVE_TAB=name;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  $('page-'+name).classList.add('active');
+  const map={res:0,aa:1,co:2,ind:3};
+  document.querySelectorAll('.ntab')[map[name]].classList.add('active');
+  const areaMap={aa:'Anglo American',co:'Codelco',ind:'Industria'};
+  updateNodoDropdown(areaMap[name]||'');
+  renderAll();
+}
+
+/* ════════ INIT ════════ */
+(function init(){
+  // ── Semana ISO actual ──
+  function isoWeek(d){
+    const dt=new Date(d);dt.setHours(0,0,0,0);
+    dt.setDate(dt.getDate()+3-(dt.getDay()+6)%7);
+    const w1=new Date(dt.getFullYear(),0,4);
+    const wn=1+Math.round(((dt-w1)/86400000-3+(w1.getDay()+6)%7)/7);
+    return dt.getFullYear()+'-W'+String(wn).padStart(2,'0');
+  }
+  const CURR_WEEK=isoWeek(new Date());
+  $('metaBadge').textContent='Sem '+CURR_WEEK.replace(/\d{4}-/,'');
+
+  const sel=$('fSem');
+  SEMANAS.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s;
+    const label=s.replace('2026-','').replace('2025-','');
+    o.textContent=s===CURR_WEEK?label+' ★':label;
+    if(s===CURR_WEEK)o.style.color='#33C3F0';
+    sel.appendChild(o);
+  });
+  const rSel=$('fResp');
+  [...new Set(DATA.map(r=>r.creador).filter(Boolean))].sort().forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=shortName(r);rSel.appendChild(o);});
+  updateNodoDropdown('');
+  renderChips();
+  renderAll();
+})();
+</script>
+</body>
+</html>
